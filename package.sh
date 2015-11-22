@@ -1,0 +1,1 @@
+rm -f firstaid.zip && git archive --prefix=firstaid/ -o firstaid.zip HEAD
