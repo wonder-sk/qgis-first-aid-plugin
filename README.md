@@ -14,7 +14,7 @@ or toolbars, it only overrides the usual error handling with a custom dialog.
 
 ## First Aid in Action
 
-TODO
+<img src="https://raw.githubusercontent.com/wonder-sk/qgis-first-aid-plugin/master/screenshot.png">
 
 
 ## License
