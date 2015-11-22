@@ -1,5 +1,7 @@
 # First Aid Plugin for QGIS
 
+<img src="https://raw.githubusercontent.com/wonder-sk/qgis-first-aid-plugin/master/icon.png" align="right">
+
 The plugin replaces the default Python error handling in QGIS
 with a more sophisticated handler that allows more thorough inspection
 or the Python error: browse the frames, view variables, see source code
