@@ -171,8 +171,20 @@ class DebugWidget(QWidget):
 
         self.resize(800,600)
 
+        s = QSettings()
+        self.splitterSrc.restoreState(s.value("/FirstAid/splitterSrc", ""))
+        self.splitterMain.restoreState(s.value("/FirstAid/splitterMain", ""))
+        self.restoreGeometry(s.value("/FirstAid/geometry", ""))
+
         # select the last frame
         self.frames.setCurrentIndex(self.frames.model().index(len(self.entries)-1))
+
+    def closeEvent(self, event):
+        s = QSettings()
+        s.setValue("/FirstAid/splitterSrc", self.splitterSrc.saveState())
+        s.setValue("/FirstAid/splitterMain", self.splitterMain.saveState())
+        s.setValue("/FirstAid/geometry", self.saveGeometry())
+        QWidget.closeEvent(self, event)
 
     def current_frame_changed(self, current, previous):
         row = current.row()
@@ -207,6 +219,8 @@ def call_err():
 
 if __name__ == '__main__':
     a = QApplication(sys.argv)
+    QCoreApplication.setOrganizationName("Test")
+    QCoreApplication.setApplicationName("Test App")
     try:
         call_err()
     except StandardError, e:
