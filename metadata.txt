@@ -1,0 +1,16 @@
+[general]
+name=First Aid
+description=A tool for plugin developers to inspect Python errors
+version=1.0
+qgisMinimumVersion=2.0
+author=Martin Dobias
+email=wonder.sk@gmail.com
+icon=icon.png
+
+homepage=https://github.com/wonder-sk/qgis-first-aid-plugin
+tracker=https://github.com/wonder-sk/qgis-first-aid-plugin/issues
+repository=https://github.com/wonder-sk/qgis-first-aid-plugin
+about=The plugin replaces the default Python error handling in QGIS
+  with a more sophisticated handler that allows more thorough inspection
+  or the Python error: browse the frames, view variables, see source code
+  or even execute Python code within the context of the error.
