@@ -1,7 +1,7 @@
 [general]
 name=First Aid
 description=A tool for plugin developers to inspect Python errors
-version=1.0
+version=1.1
 qgisMinimumVersion=2.0
 author=Martin Dobias
 email=wonder.sk@gmail.com
