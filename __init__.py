@@ -16,6 +16,7 @@ import qgis.utils
 
 from debugwidget import DebugWidget
 
+import handlers_qgis   # for introspection of QGIS types
 
 dw = None
 

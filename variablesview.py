@@ -22,6 +22,12 @@ Role_Type = Qt.UserRole+2
 Role_Value = Qt.UserRole+3
 
 
+# database of handlers for custom classes to allow better introspection
+# key = class, value = method with two arguments: 1. value, 2. parent item
+# see handlers_qgis.py for how the handlers are implemented
+custom_class_handlers = {}
+
+
 
 class VariablesTreeItem(object):
 
@@ -85,12 +91,19 @@ class ObjectTreeItem(VariablesTreeItem):
     def __init__(self, name, value, parent=None):
         VariablesTreeItem.__init__(self, name, value, parent)
 
-        self.has_children = len(value.__dict__) > 0
+        self.custom_handler = None
+        if hasattr(self.value, '__class__') and self.value.__class__ in custom_class_handlers:
+          self.custom_handler = custom_class_handlers[self.value.__class__]
+
+        self.has_children = len(value.__dict__) > 0 or self.custom_handler is not None
 
     def populate_children(self):
         self.populated_children = True
         for i,v in self.value.__dict__.iteritems():
             make_item(str(i), v, self)
+
+        if self.custom_handler is not None:
+            self.custom_handler(self.value, self)
 
 
 class ScalarTreeItem(VariablesTreeItem):
@@ -241,6 +254,11 @@ if __name__ == '__main__':
         A1 = 123
         def __init__(self):
             self.x = 456
+
+    def handle_TestClass(value, parent):
+        make_item("handler test", 1234567890, parent)
+
+    custom_class_handlers[TestClass] = handle_TestClass
 
     import sys
     a = QApplication(sys.argv)
