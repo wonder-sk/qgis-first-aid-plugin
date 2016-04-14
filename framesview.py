@@ -20,8 +20,12 @@ class FramesModel(QAbstractListModel):
 
     def __init__(self, tb, parent=None):
         QAbstractListModel.__init__(self, parent)
-        self.tb = tb
-        self.entries = traceback.extract_tb(tb)
+        if isinstance(tb, list):
+            self.tb = None
+            self.entries = tb
+        else:
+            self.tb = tb
+            self.entries = traceback.extract_tb(tb)
 
     def rowCount(self, parent):
         return len(self.entries)
