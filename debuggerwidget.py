@@ -18,6 +18,8 @@ from PyQt4.QtGui import *
 import sys
 import bdb
 
+from variablesview import VariablesView
+
 input_filename = 'test_script.py'
 
 
@@ -47,6 +49,7 @@ class MyDbg(bdb.Bdb):
             return
         #print "line", frame, frame.f_code.co_filename, frame.f_lineno
         self.lineno = frame.f_lineno
+        self.widget.vars_view.setVariables(frame.f_locals)
         self.widget.update_highlight()
         self.e.exec_()
 
@@ -90,6 +93,7 @@ class MyDbg(bdb.Bdb):
             self.lineno = -1
             self.widget.update_highlight()
             self.widget.update_buttons()
+            self.widget.vars_view.setVariables({})
 
 
 class DebuggerWidget(QWidget):
@@ -110,14 +114,17 @@ class DebuggerWidget(QWidget):
         self.action_continue = self.toolbar.addAction("continue (F5)", self.on_continue)
         self.action_continue.setShortcut("F5")
 
+        self.vars_view = VariablesView()
         self.label_status = QLabel()
+
         layout = QVBoxLayout()
         layout.addWidget(self.toolbar)
         layout.addWidget(self.text_edit)
+        layout.addWidget(self.vars_view)
         layout.addWidget(self.label_status)
         self.setLayout(layout)
 
-        self.resize(800,600)
+        self.resize(800,800)
 
         file_content = open(input_filename).read()
         self.text_edit.setPlainText(file_content)
