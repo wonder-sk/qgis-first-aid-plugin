@@ -42,8 +42,11 @@ class VariablesTreeItem(object):
         if parent:
             parent.children.append(self)
 
+    def val(self):
+        return repr(self.value)
+
     def text(self):
-        return "%s = {%s} %s" % (self.name, self.type_name(), repr(self.value))
+        return "%s = {%s} %s" % (self.name, self.type_name(), self.val())
 
     def type_name(self):
         return type(self.value).__name__
@@ -110,6 +113,23 @@ class ScalarTreeItem(VariablesTreeItem):
     def __init__(self, name, value, parent):
         VariablesTreeItem.__init__(self, name, value, parent)
 
+class StringTreeItem(VariablesTreeItem):
+    def _is_internal(self):
+        return len(self.value.split('\n')) > 0 and self.name == '__str__'
+
+    def __init__(self, name, value, parent):
+        VariablesTreeItem.__init__(self, name, value, parent)
+        self.has_children = not self._is_internal()
+
+    def val(self):
+        if self._is_internal():
+            return str(self.value)
+        else:
+            return VariablesTreeItem.val(self)
+
+    def populate_children(self):
+        self.populated_children = True
+        make_item('__str__', self.value, self)
 
 def make_item(name, value, parent=None):
     """ Generate VariablesTreeItem instance for the given variable """
@@ -120,6 +140,8 @@ def make_item(name, value, parent=None):
         return ListTreeItem(name, value, parent)
     elif hasattr(value, "__dict__"):
         return ObjectTreeItem(name, value, parent)
+    elif isinstance(value, basestring):
+        return StringTreeItem(name, value, parent)
     else:
         return ScalarTreeItem(name, value, parent)
 
@@ -205,7 +227,7 @@ class VariablesItemModel(QAbstractItemModel):
         elif role == Role_Type:
             return item.type_name()
         elif role == Role_Value:
-            return repr(item.value)
+            return item.val()
 
         #return
 
@@ -258,13 +280,24 @@ if __name__ == '__main__':
     def handle_TestClass(value, parent):
         make_item("handler test", 1234567890, parent)
 
+    def long_string():
+        return r"""
+            SELECT
+                *
+            FROM
+                mytable
+            WHERE
+                id = 1
+            ORDER BY
+                name"""
+
     custom_class_handlers[TestClass] = handle_TestClass
 
     import sys
     a = QApplication(sys.argv)
 
     tv = VariablesView()
-    tv.setVariables({'a': 1, 'ax': [5,6,7], 'b': {'c': 3, 'd': 4}, 'tv': tv, 'e': TestClass()})
+    tv.setVariables({'a': 1, 'ax': [5,6,7], 'b': {'c': 3, 'd': 4}, 'tv': tv, 'e': TestClass(), 'ls': long_string()})
     tv.show()
 
     a.exec_()
