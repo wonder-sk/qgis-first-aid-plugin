@@ -142,6 +142,7 @@ class DebugWidget(QWidget):
         self.setWindowTitle('Python Error')
 
         self.error = QLabel("<h1>"+etype.__name__+"</h1><b>"+unicode(value)+"</b>")
+        self.error.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
         self.frames = FramesView()
         self.frames.setTraceback(tb)
