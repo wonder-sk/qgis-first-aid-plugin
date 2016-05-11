@@ -30,19 +30,26 @@ def classFactory(iface):
     return FirstAidPlugin(iface)
 
 
-
 class FirstAidPlugin:
     def __init__(self, iface):
         self.old_show_exception = None
 
     def initGui(self):
+        # ReportPlugin also hooks exceptions and needs to be unloaded if active
+        # so qgis.utils.showException is the QGIS native one
+        report_plugin = "report"
+        report_plugin_active = report_plugin in qgis.utils.active_plugins
+        if report_plugin_active:
+            qgis.utils.unloadPlugin(report_plugin)
 
         # hook to exception handling
         self.old_show_exception = qgis.utils.showException
         qgis.utils.showException = showException
 
-        # ReportPlugin also hooks exceptions and needs to be loaded after FirstAid
-        qgis.utils.reloadPlugin("qgis-report-plugin")
+        # If ReportPlugin was activated, load and start it again to cooperate
+        if report_plugin_active:
+            qgis.utils.loadPlugin(report_plugin)
+            qgis.utils.startPlugin(report_plugin)
 
     def unload(self):
 
