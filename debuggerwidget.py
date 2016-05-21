@@ -9,10 +9,6 @@
 # (at your option) any later version.
 #---------------------------------------------------------------------
 
-# TODO:
-# - debugging of any file
-# - load files
-# - breakpoints in any file
 
 import sip
 sip.setapi('QVariant', 2)
@@ -20,6 +16,7 @@ sip.setapi('QString', 2)
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+import os
 import sys
 import bdb
 import traceback
@@ -54,19 +51,20 @@ class Debugger(object):
         if event == 'call':   # arg is always None
             # we need to return tracing function for this frame - either None or this function...
 
-            if frame.f_code.co_filename != input_filename:
-                # only trace the test script
+            if frame.f_code.co_filename not in self.main_widget.text_edits:
+                # only trace the loaded files
                 return None
             return self.trace_function
 
         elif event == 'line':  # arg is always None
             print "++ line", format_frame(frame)
 
-            if self.stepping or frame.f_lineno-1 in self.main_widget.text_edit.breakpoints:
+            text_edit = self.main_widget.text_edits[frame.f_code.co_filename]
+            if self.stepping or frame.f_lineno-1 in text_edit.breakpoints:
                 self.main_widget.vars_view.setVariables(frame.f_locals)
                 self.main_widget.frames_view.setTraceback(traceback.extract_stack(frame))
-                self.main_widget.text_edit.debug_line = frame.f_lineno
-                self.main_widget.text_edit.update_highlight()
+                text_edit.debug_line = frame.f_lineno
+                text_edit.update_highlight()
                 self.ev_loop.exec_()
 
         elif event == 'return':  # arg is return value
@@ -86,6 +84,7 @@ class SourceWidget(QTextEdit):
         self.setFont(QFont("Courier"))
         # self.setReadOnly(True)  # does not show cursor :(
 
+        self.filename = filename
         self.breakpoints = []
         self.debug_line = -1
 
@@ -128,9 +127,16 @@ class DebuggerWidget(QWidget):
     def __init__(self, exc_info, parent=None):
         QWidget.__init__(self, parent)
 
-        self.text_edit = SourceWidget(input_filename)
+        self.text_edits = {}
         self.toolbar = QToolBar()
 
+        self.tab_widget = QTabWidget()
+        self.tab_widget.setTabsClosable(True)
+        self.tab_widget.tabCloseRequested.connect(self.on_tab_close_requested)
+
+        self.load_file(input_filename)
+
+        self.action_load = self.toolbar.addAction(self.style().standardIcon(QStyle.SP_DirOpenIcon), "load", self.on_load)
         self.action_debugging = self.toolbar.addAction("debug", self.on_debug)
         self.action_debugging.setCheckable(True)
         self.action_run = self.toolbar.addAction("run (Ctrl+R)", self.on_run)
@@ -146,28 +152,63 @@ class DebuggerWidget(QWidget):
         self.frames_view = FramesView()
         self.label_status = QLabel()
 
+        layout2 = QHBoxLayout()
+        layout2.addWidget(self.vars_view)
+        layout2.addWidget(self.frames_view)
+
         layout = QVBoxLayout()
         layout.addWidget(self.toolbar)
-        layout.addWidget(self.text_edit)
-        layout.addWidget(self.vars_view)
-        layout.addWidget(self.frames_view)
+        layout.addWidget(self.tab_widget)
+        layout.addLayout(layout2)
         layout.addWidget(self.label_status)
         self.setLayout(layout)
 
         self.resize(800,800)
 
-        self.text_edit.cursorPositionChanged.connect(self.on_pos_changed)
-        self.on_pos_changed()
+        #self.text_edit.cursorPositionChanged.connect(self.on_pos_changed)
+        #self.on_pos_changed()
 
         self.debugger = Debugger(self)
 
         self.update_buttons()
 
+
+    def load_file(self, filename):
+        if filename in self.text_edits:
+            return   # already there...
+        self.text_edits[filename] = SourceWidget(filename)
+        tab_text = os.path.basename(filename)
+        self.tab_widget.addTab(self.text_edits[filename], tab_text)
+        self.tab_widget.setCurrentWidget(self.text_edits[filename])
+
+    def switch_to_file(self, filename):
+        if filename in self.text_edits:
+            self.tab_widget.setCurrentWidget(self.text_edits[filename])
+
+    def unload_file(self, filename):
+        for index in xrange(self.tab_widget.count()):
+            if self.text_edits[filename] == self.tab_widget.widget(index):
+                self.tab_widget.removeTab(index)
+                del self.text_edits[filename]
+                break
+
+    def on_load(self):
+        filename = QFileDialog.getOpenFileName(self, "Load")
+        if filename == '':
+            return
+
+        self.load_file(filename)
+
+    def on_tab_close_requested(self):
+        self.unload_file(self.tab_widget.currentWidget().filename)
+
+    """
     def on_pos_changed(self):
         c = self.text_edit.textCursor()
         line = c.blockNumber() + 1
         col = c.positionInBlock() + 1
         self.label_status.setText("%d:%d" % (line, col))
+    """
 
     def on_run(self):
         globals = None
@@ -177,10 +218,14 @@ class DebuggerWidget(QWidget):
             globals = __main__.__dict__
         if locals is None:
             locals = globals
-        execfile(input_filename, globals, locals)
+        execfile(self.tab_widget.currentWidget().filename, globals, locals)
+
+    def current_text_edit(self):
+        return self.tab_widget.currentWidget()
 
     def on_toggle_breakpoint(self):
-        self.text_edit.toggle_breakpoint()
+        if self.current_text_edit():
+            self.current_text_edit().toggle_breakpoint()
 
     def update_buttons(self):
         active = self.debugger.active
@@ -195,8 +240,8 @@ class DebuggerWidget(QWidget):
 
     def on_continue(self):
         self.debugger.stepping = False
-        self.text_edit.debug_line = -1
-        self.text_edit.update_highlight()
+        self.current_text_edit().debug_line = -1
+        self.current_text_edit().update_highlight()
         self.vars_view.setVariables({})
         self.frames_view.setTraceback(None)
         self.debugger.ev_loop.exit(0)
