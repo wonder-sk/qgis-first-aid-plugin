@@ -13,7 +13,6 @@
 # - debugging of any file
 # - load files
 # - breakpoints in any file
-# - scroll to line with current stop
 
 import sip
 sip.setapi('QVariant', 2)
@@ -178,8 +177,13 @@ class DebuggerWidget(QWidget):
         # debug line
         if self.debugger.lineno != -1:
             sel.append(_highlight(self.debugger.lineno-1, QColor(180,255,255)))
+            # also scroll to the line
+            block = self.text_edit.document().findBlockByLineNumber(self.debugger.lineno-1)
+            self.text_edit.setTextCursor(QTextCursor(block))
+            self.text_edit.ensureCursorVisible()
 
         self.text_edit.setExtraSelections(sel)
+
 
     """
     def on_stop(self):
