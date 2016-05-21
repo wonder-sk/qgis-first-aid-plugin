@@ -47,7 +47,6 @@ class Debugger(object):
         self.active = False
         self.ev_loop = QEventLoop()
         self.main_widget = main_widget
-        self.lineno = -1
         self.stepping = False
 
     def trace_function(self, frame, event, arg):
@@ -63,11 +62,11 @@ class Debugger(object):
         elif event == 'line':  # arg is always None
             print "++ line", format_frame(frame)
 
-            if self.stepping or frame.f_lineno-1 in self.main_widget.breakpoints:
-                self.lineno = frame.f_lineno
+            if self.stepping or frame.f_lineno-1 in self.main_widget.text_edit.breakpoints:
                 self.main_widget.vars_view.setVariables(frame.f_locals)
                 self.main_widget.frames_view.setTraceback(traceback.extract_stack(frame))
-                self.main_widget.update_highlight()
+                self.main_widget.text_edit.debug_line = frame.f_lineno
+                self.main_widget.text_edit.update_highlight()
                 self.ev_loop.exec_()
 
         elif event == 'return':  # arg is return value
@@ -78,21 +77,64 @@ class Debugger(object):
             print "trace", format_frames(frame), " | ", event, arg
 
 
+class SourceWidget(QTextEdit):
+    def __init__(self, filename, parent=None):
+        QTextEdit.__init__(self, parent)
+
+        file_content = open(filename).read()
+        self.setPlainText(file_content)
+        self.setFont(QFont("Courier"))
+        # self.setReadOnly(True)  # does not show cursor :(
+
+        self.breakpoints = []
+        self.debug_line = -1
+
+    def toggle_breakpoint(self):
+        line_no = self.textCursor().blockNumber()
+        if line_no in self.breakpoints:
+            self.breakpoints.remove(line_no)
+        else:
+            self.breakpoints.append(line_no)
+        self.update_highlight()
+
+    def update_highlight(self):
+
+        def _highlight(line_no, color):
+            block = self.document().findBlockByLineNumber(line_no)
+            highlight = QTextEdit.ExtraSelection()
+            highlight.cursor = QTextCursor(block)
+            highlight.format.setProperty(QTextFormat.FullWidthSelection, True)
+            highlight.format.setBackground(color)
+            return highlight
+
+        sel = []
+
+        # breakpoints
+        for bp_line_no in self.breakpoints:
+            sel.append(_highlight(bp_line_no, QColor(255,180,180)))
+
+        # debug line
+        if self.debug_line != -1:
+            sel.append(_highlight(self.debug_line-1, QColor(180,255,255)))
+            # also scroll to the line
+            block = self.document().findBlockByLineNumber(self.debug_line-1)
+            self.setTextCursor(QTextCursor(block))
+            self.ensureCursorVisible()
+
+        self.setExtraSelections(sel)
 
 
 class DebuggerWidget(QWidget):
     def __init__(self, exc_info, parent=None):
         QWidget.__init__(self, parent)
 
-        self.text_edit = QTextEdit()
+        self.text_edit = SourceWidget(input_filename)
         self.toolbar = QToolBar()
 
         self.action_debugging = self.toolbar.addAction("debug", self.on_debug)
         self.action_debugging.setCheckable(True)
         self.action_run = self.toolbar.addAction("run (Ctrl+R)", self.on_run)
         self.action_run.setShortcut("Ctrl+R")
-        #self.action_stop = self.toolbar.addAction("stop (Shift+F5)", self.on_stop)
-        #self.action_stop.setShortcut("Shift+F5")
         self.action_bp = self.toolbar.addAction("breakpoint (F9)", self.on_toggle_breakpoint)
         self.action_bp.setShortcut("F9")
         self.action_step = self.toolbar.addAction("step (F10)", self.on_step)
@@ -114,15 +156,9 @@ class DebuggerWidget(QWidget):
 
         self.resize(800,800)
 
-        file_content = open(input_filename).read()
-        self.text_edit.setPlainText(file_content)
-        self.text_edit.setFont(QFont("Courier"))
-        # self.text_edit.setReadOnly(True)  # does not show cursor :(
-
         self.text_edit.cursorPositionChanged.connect(self.on_pos_changed)
         self.on_pos_changed()
 
-        self.breakpoints = []
         self.debugger = Debugger(self)
 
         self.update_buttons()
@@ -144,52 +180,14 @@ class DebuggerWidget(QWidget):
         execfile(input_filename, globals, locals)
 
     def on_toggle_breakpoint(self):
-        line_no = self.text_edit.textCursor().blockNumber()
-        if line_no in self.breakpoints:
-            self.breakpoints.remove(line_no)
-        else:
-            self.breakpoints.append(line_no)
-        self.update_highlight()
+        self.text_edit.toggle_breakpoint()
 
     def update_buttons(self):
         active = self.debugger.active
         #self.action_run.setEnabled(active)
-        #self.action_stop.setEnabled(active)
         self.action_step.setEnabled(active)
         self.action_continue.setEnabled(active)
 
-    def update_highlight(self):
-
-        def _highlight(line_no, color):
-            block = self.text_edit.document().findBlockByLineNumber(line_no)
-            highlight = QTextEdit.ExtraSelection()
-            highlight.cursor = QTextCursor(block)
-            highlight.format.setProperty(QTextFormat.FullWidthSelection, True)
-            highlight.format.setBackground(color)
-            return highlight
-
-        sel = []
-
-        # breakpoints
-        for bp_line_no in self.breakpoints:
-            sel.append(_highlight(bp_line_no, QColor(255,180,180)))
-
-        # debug line
-        if self.debugger.lineno != -1:
-            sel.append(_highlight(self.debugger.lineno-1, QColor(180,255,255)))
-            # also scroll to the line
-            block = self.text_edit.document().findBlockByLineNumber(self.debugger.lineno-1)
-            self.text_edit.setTextCursor(QTextCursor(block))
-            self.text_edit.ensureCursorVisible()
-
-        self.text_edit.setExtraSelections(sel)
-
-
-    """
-    def on_stop(self):
-        self.dbg.set_quit()
-        self.dbg.e.exit(0)
-    """
 
     def on_step(self):
         self.debugger.stepping = True
@@ -197,8 +195,8 @@ class DebuggerWidget(QWidget):
 
     def on_continue(self):
         self.debugger.stepping = False
-        self.debugger.lineno = -1
-        self.update_highlight()
+        self.text_edit.debug_line = -1
+        self.text_edit.update_highlight()
         self.vars_view.setVariables({})
         self.frames_view.setTraceback(None)
         self.debugger.ev_loop.exit(0)
