@@ -15,6 +15,7 @@ from PyQt4.QtCore import *
 import qgis.utils
 
 from debugwidget import DebugWidget
+from debuggerwidget import DebuggerWidget
 
 import handlers_qgis   # for introspection of QGIS types
 
@@ -35,6 +36,7 @@ def classFactory(iface):
 class FirstAidPlugin:
     def __init__(self, iface):
         self.old_show_exception = None
+        self.debugger_widget = None
 
     def initGui(self):
         # ReportPlugin also hooks exceptions and needs to be unloaded if active
@@ -48,6 +50,10 @@ class FirstAidPlugin:
         self.old_show_exception = qgis.utils.showException
         qgis.utils.showException = showException
 
+        self.action_debugger = QAction("Debug", qgis.utils.iface.mainWindow())
+        self.action_debugger.triggered.connect(self.run_debugger)
+        qgis.utils.iface.addToolBarIcon(self.action_debugger)
+
         # If ReportPlugin was activated, load and start it again to cooperate
         if report_plugin_active:
             qgis.utils.loadPlugin(report_plugin)
@@ -55,5 +61,13 @@ class FirstAidPlugin:
 
     def unload(self):
 
+        qgis.utils.iface.removeToolBarIcon(self.action_debugger)
+        del self.action_debugger
+
         # unhook from exception handling
         qgis.utils.showException = self.old_show_exception
+
+    def run_debugger(self):
+        if self.debugger_widget is None:
+            self.debugger_widget = DebuggerWidget()
+        self.debugger_widget.show()

@@ -9,6 +9,12 @@
 # (at your option) any later version.
 #---------------------------------------------------------------------
 
+# TODO:
+# - keep list of open files
+# - list of breakpoints in dock
+# - step: step into (F11) vs step over (F10)
+# - run to cursor
+# - raise window when stopped at breakpoint
 
 import sip
 sip.setapi('QVariant', 2)
@@ -24,7 +30,6 @@ import traceback
 from variablesview import VariablesView
 from framesview import FramesView
 
-input_filename = 'test_script.py'
 
 def format_frame(frame):
     return "<FRAME %s:%d :: %s>" % (frame.f_code.co_filename, frame.f_lineno, frame.f_code.co_name)
@@ -124,20 +129,19 @@ class SourceWidget(QTextEdit):
 
 
 class DebuggerWidget(QMainWindow):
-    def __init__(self, exc_info, parent=None):
-        QWidget.__init__(self, parent)
+    def __init__(self, parent=None):
+        QMainWindow.__init__(self, parent)
 
         self.setWindowTitle("First Aid - Debugger")
 
         self.text_edits = {}
         self.toolbar = self.addToolBar("General")
+        self.toolbar.setObjectName("ToolbarGeneral")
 
         self.tab_widget = QTabWidget()
         self.tab_widget.setTabsClosable(True)
         self.tab_widget.tabCloseRequested.connect(self.on_tab_close_requested)
         self.tab_widget.currentChanged.connect(self.on_pos_changed)
-
-        self.load_file(input_filename)
 
         self.setCentralWidget(self.tab_widget)
 
@@ -157,10 +161,12 @@ class DebuggerWidget(QMainWindow):
         self.frames_view = FramesView()
 
         self.dock_frames = QDockWidget("Frames", self)
+        self.dock_frames.setObjectName("DockFrames")
         self.dock_frames.setWidget(self.frames_view)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_frames)
 
         self.dock_vars = QDockWidget("Variables", self)
+        self.dock_vars.setObjectName("DockVariables")
         self.dock_vars.setWidget(self.vars_view)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_vars)
 
@@ -169,6 +175,17 @@ class DebuggerWidget(QMainWindow):
         self.debugger = Debugger(self)
 
         self.update_buttons()
+
+        settings = QSettings()
+        self.restoreGeometry(settings.value("/plugins/firstaid/debugger-geometry", ''))
+        self.restoreState(settings.value("/plugins/firstaid/debugger-windowstate", ''))
+
+    def closeEvent(self, event):
+        settings = QSettings()
+        settings.setValue("/plugins/firstaid/debugger-geometry", self.saveGeometry())
+        settings.setValue("/plugins/firstaid/debugger-windowstate", self.saveState())
+
+        QMainWindow.closeEvent(self, event)
 
 
     def load_file(self, filename):
@@ -257,6 +274,7 @@ class DebuggerWidget(QMainWindow):
 
 if __name__ == '__main__':
     a = QApplication(sys.argv)
-    w = DebuggerWidget(sys.exc_info())
+    w = DebuggerWidget()
+    w.load_file('test_script.py')
     w.show()
     a.exec_()
