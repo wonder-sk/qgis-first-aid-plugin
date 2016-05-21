@@ -10,7 +10,6 @@
 #---------------------------------------------------------------------
 
 # TODO:
-# - keep list of open files
 # - list of breakpoints in dock
 # - step: step into (F11) vs step over (F10)
 # - run to cursor
@@ -180,10 +179,17 @@ class DebuggerWidget(QMainWindow):
         self.restoreGeometry(settings.value("/plugins/firstaid/debugger-geometry", ''))
         self.restoreState(settings.value("/plugins/firstaid/debugger-windowstate", ''))
 
+        # load files from previous session
+        for filename in settings.value("/plugins/firstaid/debugger-files", []):
+            self.load_file(filename)
+
     def closeEvent(self, event):
         settings = QSettings()
         settings.setValue("/plugins/firstaid/debugger-geometry", self.saveGeometry())
         settings.setValue("/plugins/firstaid/debugger-windowstate", self.saveState())
+
+        filenames = self.text_edits.keys()
+        settings.setValue("/plugins/firstaid/debugger-files", filenames)
 
         QMainWindow.closeEvent(self, event)
 
@@ -191,7 +197,11 @@ class DebuggerWidget(QMainWindow):
     def load_file(self, filename):
         if filename in self.text_edits:
             return   # already there...
-        self.text_edits[filename] = SourceWidget(filename)
+        try:
+            self.text_edits[filename] = SourceWidget(filename)
+        except IOError:
+            # TODO: display warning we failed to read the file
+            return
         tab_text = os.path.basename(filename)
         self.tab_widget.addTab(self.text_edits[filename], tab_text)
         self.tab_widget.setCurrentWidget(self.text_edits[filename])
