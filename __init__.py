@@ -22,6 +22,8 @@ dw = None
 
 def showException(etype, value, tb, msg, *args, **kwargs):
     global dw
+    if dw is not None and dw.isVisible():
+        return  # pass this exception while previous is being inspected
     dw = DebugWidget((etype,value,tb))
     dw.show()
 
