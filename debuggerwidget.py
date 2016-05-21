@@ -12,8 +12,8 @@
 # TODO:
 # - list of breakpoints in dock
 # - step: step into (F11) vs step over (F10)
+# - open file when stepping
 # - run to cursor
-# - raise window when stopped at breakpoint
 
 import sip
 sip.setapi('QVariant', 2)
@@ -67,8 +67,11 @@ class Debugger(object):
             if self.stepping or frame.f_lineno-1 in text_edit.breakpoints:
                 self.main_widget.vars_view.setVariables(frame.f_locals)
                 self.main_widget.frames_view.setTraceback(traceback.extract_stack(frame))
+                self.main_widget.tab_widget.setCurrentWidget(text_edit)
                 text_edit.debug_line = frame.f_lineno
                 text_edit.update_highlight()
+                self.main_widget.raise_()
+                self.main_widget.activateWindow()
                 self.ev_loop.exec_()
 
         elif event == 'return':  # arg is return value
@@ -147,7 +150,7 @@ class DebuggerWidget(QMainWindow):
         self.action_load = self.toolbar.addAction(self.style().standardIcon(QStyle.SP_DirOpenIcon), "load", self.on_load)
         self.action_debugging = self.toolbar.addAction("debug", self.on_debug)
         self.action_debugging.setCheckable(True)
-        self.action_run = self.toolbar.addAction("run (Ctrl+R)", self.on_run)
+        self.action_run = self.toolbar.addAction("run script (Ctrl+R)", self.on_run)
         self.action_run.setShortcut("Ctrl+R")
         self.action_bp = self.toolbar.addAction("breakpoint (F9)", self.on_toggle_breakpoint)
         self.action_bp.setShortcut("F9")
