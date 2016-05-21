@@ -123,18 +123,23 @@ class SourceWidget(QTextEdit):
         self.setExtraSelections(sel)
 
 
-class DebuggerWidget(QWidget):
+class DebuggerWidget(QMainWindow):
     def __init__(self, exc_info, parent=None):
         QWidget.__init__(self, parent)
 
+        self.setWindowTitle("First Aid - Debugger")
+
         self.text_edits = {}
-        self.toolbar = QToolBar()
+        self.toolbar = self.addToolBar("General")
 
         self.tab_widget = QTabWidget()
         self.tab_widget.setTabsClosable(True)
         self.tab_widget.tabCloseRequested.connect(self.on_tab_close_requested)
+        self.tab_widget.currentChanged.connect(self.on_pos_changed)
 
         self.load_file(input_filename)
+
+        self.setCentralWidget(self.tab_widget)
 
         self.action_load = self.toolbar.addAction(self.style().standardIcon(QStyle.SP_DirOpenIcon), "load", self.on_load)
         self.action_debugging = self.toolbar.addAction("debug", self.on_debug)
@@ -150,23 +155,16 @@ class DebuggerWidget(QWidget):
 
         self.vars_view = VariablesView()
         self.frames_view = FramesView()
-        self.label_status = QLabel()
 
-        layout2 = QHBoxLayout()
-        layout2.addWidget(self.vars_view)
-        layout2.addWidget(self.frames_view)
+        self.dock_frames = QDockWidget("Frames", self)
+        self.dock_frames.setWidget(self.frames_view)
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_frames)
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.toolbar)
-        layout.addWidget(self.tab_widget)
-        layout.addLayout(layout2)
-        layout.addWidget(self.label_status)
-        self.setLayout(layout)
+        self.dock_vars = QDockWidget("Variables", self)
+        self.dock_vars.setWidget(self.vars_view)
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_vars)
 
         self.resize(800,800)
-
-        #self.text_edit.cursorPositionChanged.connect(self.on_pos_changed)
-        #self.on_pos_changed()
 
         self.debugger = Debugger(self)
 
@@ -180,6 +178,8 @@ class DebuggerWidget(QWidget):
         tab_text = os.path.basename(filename)
         self.tab_widget.addTab(self.text_edits[filename], tab_text)
         self.tab_widget.setCurrentWidget(self.text_edits[filename])
+        self.text_edits[filename].cursorPositionChanged.connect(self.on_pos_changed)
+        self.on_pos_changed()
 
     def switch_to_file(self, filename):
         if filename in self.text_edits:
@@ -202,13 +202,13 @@ class DebuggerWidget(QWidget):
     def on_tab_close_requested(self):
         self.unload_file(self.tab_widget.currentWidget().filename)
 
-    """
     def on_pos_changed(self):
-        c = self.text_edit.textCursor()
+        if not self.current_text_edit():
+            self.statusBar().showMessage("[no file]")
+        c = self.current_text_edit().textCursor()
         line = c.blockNumber() + 1
         col = c.positionInBlock() + 1
-        self.label_status.setText("%d:%d" % (line, col))
-    """
+        self.statusBar().showMessage("%d:%d" % (line, col))
 
     def on_run(self):
         globals = None
