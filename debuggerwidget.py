@@ -9,6 +9,12 @@
 # (at your option) any later version.
 #---------------------------------------------------------------------
 
+# TODO:
+# - debugging of any file
+# - load files
+# - breakpoints in any file
+# - scroll to line with current stop
+
 import sip
 sip.setapi('QVariant', 2)
 sip.setapi('QString', 2)
@@ -35,124 +41,44 @@ def format_frames(frame):
     ret += format_frame(frame)
     return ret
 
-"""
-def my_trace_dispatch(frame, event, arg):
-    if event == 'call':   # arg is always None
-        # we need to return tracing function for this frame - either None or this function...
+class Debugger(object):
 
-        if frame.f_code.co_filename != input_filename:
-            # only trace the test script
-            return None
-        return my_trace_dispatch
+    def __init__(self, main_widget):
 
-    elif event == 'line':  # arg is always None
-        print "++ line", format_frame(frame)
-
-    elif event == 'return':  # arg is return value
-        print "++ return", arg
-
-    else:
-        print "trace", format_frames(frame), " | ", event, arg
-"""
-
-class MyDbg(bdb.Bdb):
-
-    def __init__(self, widget, skip=None):
-        bdb.Bdb.__init__(self, skip)
-
-        self.e = QEventLoop()
-        self.widget = widget
+        self.active = False
+        self.ev_loop = QEventLoop()
+        self.main_widget = main_widget
         self.lineno = -1
-        self.starting = False
-        self.is_active = False
+        self.stepping = False
 
-    def user_call(self, frame, argument_list):
-        """This method is called from dispatch_call() when there is the possibility
-        that a break might be necessary anywhere inside the called function."""
-        print "call", format_frame(frame)
+    def trace_function(self, frame, event, arg):
+        """ to be used for sys.trace """
+        if event == 'call':   # arg is always None
+            # we need to return tracing function for this frame - either None or this function...
 
-    def user_line(self, frame):
-        """This method is called from dispatch_line() when either stop_here()
-        or break_here() yields True."""
-        #print "user_line"
-        if self.starting:
-            # initially keep running - do not stop with first line!
-            print "continuing..."
-            self.starting = False
-            self.set_continue()
-            return
-        print "line", frame, frame.f_code.co_filename, frame.f_lineno
-        self.lineno = frame.f_lineno
-        self.widget.vars_view.setVariables(frame.f_locals)
-        self.widget.frames_view.setTraceback(traceback.extract_stack(frame))
-        self.widget.update_highlight()
-        self.e.exec_()
+            if frame.f_code.co_filename != input_filename:
+                # only trace the test script
+                return None
+            return self.trace_function
 
-    def user_return(self, frame, return_value):
-        """This method is called from dispatch_return() when stop_here() yields True."""
-        print "return", frame, return_value
+        elif event == 'line':  # arg is always None
+            print "++ line", format_frame(frame)
 
-    def user_exception(self, frame, exc_info):
-        """This method is called from dispatch_exception() when stop_here() yields True."""
-        print "exception", frame, exc_info
+            if self.stepping or frame.f_lineno-1 in self.main_widget.breakpoints:
+                self.lineno = frame.f_lineno
+                self.main_widget.vars_view.setVariables(frame.f_locals)
+                self.main_widget.frames_view.setTraceback(traceback.extract_stack(frame))
+                self.main_widget.update_highlight()
+                self.ev_loop.exec_()
 
-    def do_clear(self, arg):
-        """Handle how a breakpoint must be removed when it is a temporary one."""
-        # TODO: clear temporary breakpoint
-        print "do_clear", arg
-
-    """
-    def start_debugging(self):
-
-        # GUI update
-        self.is_active = True
-        self.starting = True
-        self.widget.update_buttons()
-
-        self.reset()
-        sys.settrace(self.trace_dispatch)
-
-    def stop_debugging(self):
-
-        self.quitting = 1
-        sys.settrace(None)
-
-        # GUI cleanup
-        self.is_active = False
-        self.lineno = -1
-        self.widget.update_highlight()
-        self.widget.update_buttons()
-        self.widget.vars_view.setVariables({})
-    """
-
-    def runfile(self, filename, globals=None, locals=None):
-
-        # GUI update
-        self.is_active = True
-        self.starting = True
-        self.widget.update_buttons()
-
-        if globals is None:
-            import __main__
-            globals = __main__.__dict__
-        if locals is None:
-            locals = globals
-        self.reset()
-        sys.settrace(self.trace_dispatch)
-        try:
-            execfile(filename, globals, locals)
-        except bdb.BdbQuit:
+        elif event == 'return':  # arg is return value
             pass
-        finally:
-            self.quitting = 1
-            sys.settrace(None)
+            #print "++ return", arg
 
-            # GUI cleanup
-            self.is_active = False
-            self.lineno = -1
-            self.widget.update_highlight()
-            self.widget.update_buttons()
-            self.widget.vars_view.setVariables({})
+        else:
+            print "trace", format_frames(frame), " | ", event, arg
+
+
 
 
 class DebuggerWidget(QWidget):
@@ -162,12 +88,12 @@ class DebuggerWidget(QWidget):
         self.text_edit = QTextEdit()
         self.toolbar = QToolBar()
 
-        #self.action_debugging = self.toolbar.addAction("debug", self.on_debug)
-        #self.action_debugging.setCheckable(True)
-        self.action_run = self.toolbar.addAction("run", self.on_run)
-        #self.action_run.setShortcut("F5")
-        self.action_stop = self.toolbar.addAction("stop (Shift+F5)", self.on_stop)
-        self.action_stop.setShortcut("Shift+F5")
+        self.action_debugging = self.toolbar.addAction("debug", self.on_debug)
+        self.action_debugging.setCheckable(True)
+        self.action_run = self.toolbar.addAction("run (Ctrl+R)", self.on_run)
+        self.action_run.setShortcut("Ctrl+R")
+        #self.action_stop = self.toolbar.addAction("stop (Shift+F5)", self.on_stop)
+        #self.action_stop.setShortcut("Shift+F5")
         self.action_bp = self.toolbar.addAction("breakpoint (F9)", self.on_toggle_breakpoint)
         self.action_bp.setShortcut("F9")
         self.action_step = self.toolbar.addAction("step (F10)", self.on_step)
@@ -198,7 +124,7 @@ class DebuggerWidget(QWidget):
         self.on_pos_changed()
 
         self.breakpoints = []
-        self.dbg = MyDbg(self) #, skip=['__main__', 'bdb', 'posixpath', 'linecache'])
+        self.debugger = Debugger(self)
 
         self.update_buttons()
 
@@ -209,8 +135,6 @@ class DebuggerWidget(QWidget):
         self.label_status.setText("%d:%d" % (line, col))
 
     def on_run(self):
-        self.dbg.runfile(input_filename)
-        """
         globals = None
         locals = None
         if globals is None:
@@ -219,22 +143,19 @@ class DebuggerWidget(QWidget):
         if locals is None:
             locals = globals
         execfile(input_filename, globals, locals)
-        """
 
     def on_toggle_breakpoint(self):
         line_no = self.text_edit.textCursor().blockNumber()
         if line_no in self.breakpoints:
             self.breakpoints.remove(line_no)
-            self.dbg.clear_break(input_filename, line_no+1)
         else:
             self.breakpoints.append(line_no)
-            self.dbg.set_break(input_filename, line_no+1)
         self.update_highlight()
 
     def update_buttons(self):
-        active = self.dbg.is_active
+        active = self.debugger.active
         #self.action_run.setEnabled(active)
-        self.action_stop.setEnabled(active)
+        #self.action_stop.setEnabled(active)
         self.action_step.setEnabled(active)
         self.action_continue.setEnabled(active)
 
@@ -255,32 +176,37 @@ class DebuggerWidget(QWidget):
             sel.append(_highlight(bp_line_no, QColor(255,180,180)))
 
         # debug line
-        if self.dbg.lineno != -1:
-            sel.append(_highlight(self.dbg.lineno-1, QColor(180,255,255)))
+        if self.debugger.lineno != -1:
+            sel.append(_highlight(self.debugger.lineno-1, QColor(180,255,255)))
 
         self.text_edit.setExtraSelections(sel)
 
+    """
     def on_stop(self):
         self.dbg.set_quit()
         self.dbg.e.exit(0)
+    """
 
     def on_step(self):
-        self.dbg.set_step()
-        self.dbg.e.exit(0)
+        self.debugger.stepping = True
+        self.debugger.ev_loop.exit(0)
 
     def on_continue(self):
-        self.dbg.set_continue()
-        self.dbg.e.exit(0)
+        self.debugger.stepping = False
+        self.debugger.lineno = -1
+        self.update_highlight()
+        self.vars_view.setVariables({})
+        self.frames_view.setTraceback(None)
+        self.debugger.ev_loop.exit(0)
 
-    """
     def on_debug(self):
-        if self.action_debugging.isChecked():
-            self.dbg.start_debugging()
-            #sys.settrace(my_trace_dispatch)
+        self.debugger.active  =self.action_debugging.isChecked()
+        if self.debugger.active:
+            sys.settrace(self.debugger.trace_function)
         else:
-            #sys.settrace(None)
-            self.dbg.stop_debugging()
-    """
+            sys.settrace(None)
+        self.update_buttons()
+
 
 if __name__ == '__main__':
     a = QApplication(sys.argv)
