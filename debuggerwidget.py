@@ -41,6 +41,13 @@ def format_frames(frame):
     ret += format_frame(frame)
     return ret
 
+def frame_depth(frame):
+    depth = 0
+    while frame is not None:
+        depth += 1
+        frame = frame.f_back
+    return depth
+
 def _is_deeper_frame(f0_filename, f0_lineno, f1):
     """whether f1 has been called from f0_filename:f0_lineno (directly or indirectly)"""
     while f1 is not None:
@@ -84,6 +91,9 @@ class Debugger(object):
                     elif self.next_step[0] == 'at':
                         if frame.f_code.co_filename != self.next_step[1] or frame.f_lineno != self.next_step[2]:
                             return  # only stop at the particular line of code
+                    elif self.next_step[0] == 'out':
+                        if frame_depth(frame) >= self.next_step[1]:
+                            return  # only stop when in lower frame
                 self.stopped = True
                 self.current_frame = frame
                 self.main_widget.vars_view.setVariables(frame.f_locals)
@@ -171,19 +181,25 @@ class DebuggerWidget(QMainWindow):
 
         self.setCentralWidget(self.tab_widget)
 
-        self.action_load = self.toolbar.addAction(self.style().standardIcon(QStyle.SP_DirOpenIcon), "load", self.on_load)
-        self.action_run = self.toolbar.addAction("run script (Ctrl+R)", self.on_run)
+        _icon = lambda x: QIcon(os.path.join(os.path.dirname(__file__), "icons", x+".svg"))
+
+        self.action_load = self.toolbar.addAction(_icon("folder-outline"), "Load Python file (Ctrl+O)", self.on_load)
+        self.action_load.setShortcut("Ctrl+O")
+        self.action_run = self.toolbar.addAction(_icon("run"), "Run Python file (Ctrl+R)", self.on_run)
         self.action_run.setShortcut("Ctrl+R")
-        self.action_bp = self.toolbar.addAction("breakpoint (F9)", self.on_toggle_breakpoint)
+        self.action_bp = self.toolbar.addAction(_icon("record"), "Toggle breakpoint (F9)", self.on_toggle_breakpoint)
         self.action_bp.setShortcut("F9")
-        self.action_step_into = self.toolbar.addAction("step into (F11)", self.on_step_into)
-        self.action_step_into.setShortcut("F11")
-        self.action_step_over = self.toolbar.addAction("step over (F10)", self.on_step_over)
-        self.action_step_over.setShortcut("F10")
-        self.action_run_to_cursor = self.toolbar.addAction("run to cursor (Ctrl+F10)", self.on_run_to_cursor)
-        self.action_run_to_cursor.setShortcut("Ctrl+F10")
-        self.action_continue = self.toolbar.addAction("continue (F5)", self.on_continue)
+        self.toolbar.addSeparator()
+        self.action_continue = self.toolbar.addAction(_icon("play"), "Continue (F5)", self.on_continue)
         self.action_continue.setShortcut("F5")
+        self.action_step_into = self.toolbar.addAction(_icon("debug-step-into"), "Step into (F11)", self.on_step_into)
+        self.action_step_into.setShortcut("F11")
+        self.action_step_over = self.toolbar.addAction(_icon("debug-step-over"), "Step over (F10)", self.on_step_over)
+        self.action_step_over.setShortcut("F10")
+        self.action_step_out = self.toolbar.addAction(_icon("debug-step-out"), "Step out (Shift+F11)", self.on_step_out)
+        self.action_step_over.setShortcut("Shift+F11")
+        self.action_run_to_cursor = self.toolbar.addAction(_icon("cursor-default-outline"), "Run to cursor (Ctrl+F10)", self.on_run_to_cursor)
+        self.action_run_to_cursor.setShortcut("Ctrl+F10")
 
         self.vars_view = VariablesView()
         self.frames_view = FramesView()
@@ -294,6 +310,7 @@ class DebuggerWidget(QMainWindow):
         active = self.debugger.stopped
         self.action_step_into.setEnabled(active)
         self.action_step_over.setEnabled(active)
+        self.action_step_out.setEnabled(active)
         self.action_run_to_cursor.setEnabled(active)
         self.action_continue.setEnabled(active)
 
@@ -306,6 +323,11 @@ class DebuggerWidget(QMainWindow):
     def on_step_over(self):
         self.debugger.stepping = True
         self.debugger.next_step = ('over', self.debugger.current_frame.f_code.co_filename, self.debugger.current_frame.f_lineno)
+        self.debugger.ev_loop.exit(0)
+
+    def on_step_out(self):
+        self.debugger.stepping = True
+        self.debugger.next_step = ('out', frame_depth(self.debugger.current_frame))
         self.debugger.ev_loop.exit(0)
 
     def on_run_to_cursor(self):

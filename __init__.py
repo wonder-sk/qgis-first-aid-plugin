@@ -9,6 +9,7 @@
 # (at your option) any later version.
 #---------------------------------------------------------------------
 
+import os
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
@@ -50,7 +51,8 @@ class FirstAidPlugin:
         self.old_show_exception = qgis.utils.showException
         qgis.utils.showException = showException
 
-        self.action_debugger = QAction("Debug", qgis.utils.iface.mainWindow())
+        icon = QIcon(os.path.join(os.path.dirname(__file__), "icons", "bug.svg"))
+        self.action_debugger = QAction(icon, "Debug", qgis.utils.iface.mainWindow())
         self.action_debugger.triggered.connect(self.run_debugger)
         qgis.utils.iface.addToolBarIcon(self.action_debugger)
 
