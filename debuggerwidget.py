@@ -58,6 +58,7 @@ class Debugger(object):
         self.stepping = False
         self.next_step = None  # None = stop always, ('over', file, line), ('at', file, line)
         self.current_frame = None
+        self.stopped = False
 
     def trace_function(self, frame, event, arg):
         """ to be used for sys.trace """
@@ -83,15 +84,19 @@ class Debugger(object):
                     elif self.next_step[0] == 'at':
                         if frame.f_code.co_filename != self.next_step[1] or frame.f_lineno != self.next_step[2]:
                             return  # only stop at the particular line of code
+                self.stopped = True
                 self.current_frame = frame
                 self.main_widget.vars_view.setVariables(frame.f_locals)
                 self.main_widget.frames_view.setTraceback(traceback.extract_stack(frame))
                 self.main_widget.tab_widget.setCurrentWidget(text_edit)
                 text_edit.debug_line = frame.f_lineno
                 text_edit.update_highlight()
+                self.main_widget.update_buttons()
                 self.main_widget.raise_()
                 self.main_widget.activateWindow()
-                self.ev_loop.exec_()
+                self.ev_loop.exec_()   # this will halt execution here for some time
+                self.stopped = False
+                self.main_widget.update_buttons()
 
         elif event == 'return':  # arg is return value
             pass
@@ -286,8 +291,7 @@ class DebuggerWidget(QMainWindow):
             self.current_text_edit().toggle_breakpoint()
 
     def update_buttons(self):
-        active = True  # TODO: only when stopped
-        #self.action_run.setEnabled(active)
+        active = self.debugger.stopped
         self.action_step_into.setEnabled(active)
         self.action_step_over.setEnabled(active)
         self.action_run_to_cursor.setEnabled(active)
