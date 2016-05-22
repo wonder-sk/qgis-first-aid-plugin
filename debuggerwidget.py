@@ -12,7 +12,6 @@
 # TODO:
 # - keep list of breakpoints between sessions
 # - list of breakpoints in dock
-# - open file when stepping into it
 # - handle stepping out of traced file (exit event loop)
 
 import sip
@@ -73,15 +72,21 @@ class Debugger(object):
             # we need to return tracing function for this frame - either None or this function...
 
             if frame.f_code.co_filename not in self.main_widget.text_edits:
-                # only trace the loaded files
-                return None
+                if frame.f_code.co_filename == __file__:
+                    return None  # do not trace this file
             return self.trace_function
 
         elif event == 'line':  # arg is always None
             print "++ line", format_frame(frame)
 
-            text_edit = self.main_widget.text_edits[frame.f_code.co_filename]
-            if self.stepping or frame.f_lineno-1 in text_edit.breakpoints:
+            if frame.f_code.co_filename in self.main_widget.text_edits:
+                text_edit = self.main_widget.text_edits[frame.f_code.co_filename]
+                breakpoints = text_edit.breakpoints
+            else:
+                text_edit = None
+                breakpoints = []
+
+            if self.stepping or frame.f_lineno-1 in breakpoints:
                 if isinstance(self.next_step, tuple):
                     if self.next_step[0] == 'over':
                         prev_filename = self.next_step[1]
@@ -98,6 +103,9 @@ class Debugger(object):
                 self.current_frame = frame
                 self.main_widget.vars_view.setVariables(frame.f_locals)
                 self.main_widget.frames_view.setTraceback(traceback.extract_stack(frame))
+                if text_edit is None:  # ensure it is loaded
+                    self.main_widget.load_file(frame.f_code.co_filename)
+                    text_edit = self.main_widget.text_edits[frame.f_code.co_filename]
                 self.main_widget.tab_widget.setCurrentWidget(text_edit)
                 text_edit.debug_line = frame.f_lineno
                 text_edit.update_highlight()
@@ -197,7 +205,7 @@ class DebuggerWidget(QMainWindow):
         self.action_step_over = self.toolbar.addAction(_icon("debug-step-over"), "Step over (F10)", self.on_step_over)
         self.action_step_over.setShortcut("F10")
         self.action_step_out = self.toolbar.addAction(_icon("debug-step-out"), "Step out (Shift+F11)", self.on_step_out)
-        self.action_step_over.setShortcut("Shift+F11")
+        self.action_step_out.setShortcut("Shift+F11")
         self.action_run_to_cursor = self.toolbar.addAction(_icon("cursor-default-outline"), "Run to cursor (Ctrl+F10)", self.on_run_to_cursor)
         self.action_run_to_cursor.setShortcut("Ctrl+F10")
 
@@ -278,8 +286,8 @@ class DebuggerWidget(QMainWindow):
 
         self.load_file(filename)
 
-    def on_tab_close_requested(self):
-        self.unload_file(self.tab_widget.currentWidget().filename)
+    def on_tab_close_requested(self, index):
+        self.unload_file(self.tab_widget.widget(index).filename)
 
     def on_pos_changed(self):
         if not self.current_text_edit():
