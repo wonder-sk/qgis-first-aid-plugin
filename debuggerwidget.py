@@ -10,10 +10,11 @@
 #---------------------------------------------------------------------
 
 # TODO:
+# - keep list of breakpoints between sessions
 # - list of breakpoints in dock
-# - step: step into (F11) vs step over (F10)
-# - open file when stepping
+# - open file when stepping into it
 # - run to cursor
+# - handle stepping out of traced file (exit event loop)
 
 import sip
 sip.setapi('QVariant', 2)
@@ -41,6 +42,15 @@ def format_frames(frame):
     ret += format_frame(frame)
     return ret
 
+def _is_deeper_frame(f0_filename, f0_lineno, f1):
+    """whether f1 has been called from f0_filename:f0_lineno (directly or indirectly)"""
+    while f1 is not None:
+        #print "cmp", format_frame(f0), format_frame(f1)
+        if f1.f_code.co_filename == f0_filename and f1.f_lineno == f0_lineno:
+            return True
+        f1 = f1.f_back
+    return False
+
 class Debugger(object):
 
     def __init__(self, main_widget):
@@ -49,6 +59,8 @@ class Debugger(object):
         self.ev_loop = QEventLoop()
         self.main_widget = main_widget
         self.stepping = False
+        self.next_step = None  # None = stop always, ('over', file, line), ('at', file, line)
+        self.current_frame = None
 
     def trace_function(self, frame, event, arg):
         """ to be used for sys.trace """
@@ -65,6 +77,12 @@ class Debugger(object):
 
             text_edit = self.main_widget.text_edits[frame.f_code.co_filename]
             if self.stepping or frame.f_lineno-1 in text_edit.breakpoints:
+                if self.next_step is not None:
+                    prev_filename = self.next_step[1]
+                    prev_lineno = self.next_step[2]
+                    if _is_deeper_frame(prev_filename, prev_lineno, frame):
+                        return  # in a function deeper inside or the same line
+                self.current_frame = frame
                 self.main_widget.vars_view.setVariables(frame.f_locals)
                 self.main_widget.frames_view.setTraceback(traceback.extract_stack(frame))
                 self.main_widget.tab_widget.setCurrentWidget(text_edit)
@@ -154,8 +172,10 @@ class DebuggerWidget(QMainWindow):
         self.action_run.setShortcut("Ctrl+R")
         self.action_bp = self.toolbar.addAction("breakpoint (F9)", self.on_toggle_breakpoint)
         self.action_bp.setShortcut("F9")
-        self.action_step = self.toolbar.addAction("step (F10)", self.on_step)
-        self.action_step.setShortcut("F10")
+        self.action_step_into = self.toolbar.addAction("step into (F11)", self.on_step_into)
+        self.action_step_into.setShortcut("F11")
+        self.action_step_over = self.toolbar.addAction("step over (F10)", self.on_step_over)
+        self.action_step_over.setShortcut("F10")
         self.action_continue = self.toolbar.addAction("continue (F5)", self.on_continue)
         self.action_continue.setShortcut("F5")
 
@@ -260,12 +280,19 @@ class DebuggerWidget(QMainWindow):
     def update_buttons(self):
         active = self.debugger.active
         #self.action_run.setEnabled(active)
-        self.action_step.setEnabled(active)
+        self.action_step_into.setEnabled(active)
+        self.action_step_over.setEnabled(active)
         self.action_continue.setEnabled(active)
 
 
-    def on_step(self):
+    def on_step_into(self):
         self.debugger.stepping = True
+        self.debugger.next_step = None
+        self.debugger.ev_loop.exit(0)
+
+    def on_step_over(self):
+        self.debugger.stepping = True
+        self.debugger.next_step = ('over', self.debugger.current_frame.f_code.co_filename, self.debugger.current_frame.f_lineno)
         self.debugger.ev_loop.exit(0)
 
     def on_continue(self):
