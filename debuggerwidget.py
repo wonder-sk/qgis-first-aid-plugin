@@ -53,7 +53,6 @@ class Debugger(object):
 
     def __init__(self, main_widget):
 
-        self.active = False
         self.ev_loop = QEventLoop()
         self.main_widget = main_widget
         self.stepping = False
@@ -168,8 +167,6 @@ class DebuggerWidget(QMainWindow):
         self.setCentralWidget(self.tab_widget)
 
         self.action_load = self.toolbar.addAction(self.style().standardIcon(QStyle.SP_DirOpenIcon), "load", self.on_load)
-        self.action_debugging = self.toolbar.addAction("debug", self.on_debug)
-        self.action_debugging.setCheckable(True)
         self.action_run = self.toolbar.addAction("run script (Ctrl+R)", self.on_run)
         self.action_run.setShortcut("Ctrl+R")
         self.action_bp = self.toolbar.addAction("breakpoint (F9)", self.on_toggle_breakpoint)
@@ -210,7 +207,14 @@ class DebuggerWidget(QMainWindow):
         for filename in settings.value("/plugins/firstaid/debugger-files", []):
             self.load_file(filename)
 
+        # start tracing
+        sys.settrace(self.debugger.trace_function)
+
     def closeEvent(self, event):
+
+        # disable tracing
+        sys.settrace(None)
+
         settings = QSettings()
         settings.setValue("/plugins/firstaid/debugger-geometry", self.saveGeometry())
         settings.setValue("/plugins/firstaid/debugger-windowstate", self.saveState())
@@ -282,7 +286,7 @@ class DebuggerWidget(QMainWindow):
             self.current_text_edit().toggle_breakpoint()
 
     def update_buttons(self):
-        active = self.debugger.active
+        active = True  # TODO: only when stopped
         #self.action_run.setEnabled(active)
         self.action_step_into.setEnabled(active)
         self.action_step_over.setEnabled(active)
@@ -314,14 +318,6 @@ class DebuggerWidget(QMainWindow):
         self.vars_view.setVariables({})
         self.frames_view.setTraceback(None)
         self.debugger.ev_loop.exit(0)
-
-    def on_debug(self):
-        self.debugger.active  =self.action_debugging.isChecked()
-        if self.debugger.active:
-            sys.settrace(self.debugger.trace_function)
-        else:
-            sys.settrace(None)
-        self.update_buttons()
 
 
 if __name__ == '__main__':
