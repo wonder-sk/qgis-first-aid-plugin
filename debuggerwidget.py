@@ -232,9 +232,16 @@ class DebuggerWidget(QMainWindow):
         self.restoreGeometry(settings.value("/plugins/firstaid/debugger-geometry", ''))
         self.restoreState(settings.value("/plugins/firstaid/debugger-windowstate", ''))
 
+        filenames = settings.value("/plugins/firstaid/debugger-files", [])
+        if filenames is None:
+            filenames = []
+
         # load files from previous session
-        for filename in settings.value("/plugins/firstaid/debugger-files", []):
+        for filename in filenames:
             self.load_file(filename)
+
+        if self.tab_widget.count() > 1:
+            self.tab_widget.setCurrentIndex(0)
 
         # start tracing
         sys.settrace(self.debugger.trace_function)
@@ -256,6 +263,7 @@ class DebuggerWidget(QMainWindow):
 
     def load_file(self, filename):
         if filename in self.text_edits:
+            self.switch_to_file(filename)
             return   # already there...
         try:
             self.text_edits[filename] = SourceWidget(filename)
@@ -280,9 +288,15 @@ class DebuggerWidget(QMainWindow):
                 break
 
     def on_load(self):
-        filename = QFileDialog.getOpenFileName(self, "Load")
+
+        settings = QSettings()
+        folder = settings.value("firstaid/lastFolder", '')
+
+        filename = QFileDialog.getOpenFileName(self, "Load", folder, "Python files (*.py)")
         if filename == '':
             return
+
+        settings.setValue("firstaid/lastFolder", os.path.dirname(filename))
 
         self.load_file(filename)
 
@@ -292,6 +306,7 @@ class DebuggerWidget(QMainWindow):
     def on_pos_changed(self):
         if not self.current_text_edit():
             self.statusBar().showMessage("[no file]")
+            return
         c = self.current_text_edit().textCursor()
         line = c.blockNumber() + 1
         col = c.positionInBlock() + 1
