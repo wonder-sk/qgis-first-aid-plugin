@@ -73,4 +73,6 @@ class FirstAidPlugin:
     def run_debugger(self):
         if self.debugger_widget is None:
             self.debugger_widget = DebuggerWidget()
+        else:
+            self.debugger_widget.start_tracing()
         self.debugger_widget.show()

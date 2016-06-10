@@ -78,9 +78,11 @@ class Debugger(object):
 
         elif event == 'line':  # arg is always None
             print "++ line", format_frame(frame)
+            # TODO: resolve any symbolic links (both from "frame" and from "text_edits")
+            filename = frame.f_code.co_filename
 
-            if frame.f_code.co_filename in self.main_widget.text_edits:
-                text_edit = self.main_widget.text_edits[frame.f_code.co_filename]
+            if filename in self.main_widget.text_edits:
+                text_edit = self.main_widget.text_edits[filename]
                 breakpoints = text_edit.breakpoints
             else:
                 text_edit = None
@@ -94,7 +96,7 @@ class Debugger(object):
                         if _is_deeper_frame(prev_filename, prev_lineno, frame):
                             return  # in a function deeper inside or the same line
                     elif self.next_step[0] == 'at':
-                        if frame.f_code.co_filename != self.next_step[1] or frame.f_lineno != self.next_step[2]:
+                        if filename != self.next_step[1] or frame.f_lineno != self.next_step[2]:
                             return  # only stop at the particular line of code
                     elif self.next_step[0] == 'out':
                         if frame_depth(frame) >= self.next_step[1]:
@@ -104,8 +106,8 @@ class Debugger(object):
                 self.main_widget.vars_view.setVariables(frame.f_locals)
                 self.main_widget.frames_view.setTraceback(traceback.extract_stack(frame))
                 if text_edit is None:  # ensure it is loaded
-                    self.main_widget.load_file(frame.f_code.co_filename)
-                    text_edit = self.main_widget.text_edits[frame.f_code.co_filename]
+                    self.main_widget.load_file(filename)
+                    text_edit = self.main_widget.text_edits[filename]
                 self.main_widget.tab_widget.setCurrentWidget(text_edit)
                 text_edit.debug_line = frame.f_lineno
                 text_edit.update_highlight()
@@ -244,6 +246,10 @@ class DebuggerWidget(QMainWindow):
             self.tab_widget.setCurrentIndex(0)
 
         # start tracing
+        self.start_tracing()
+
+    def start_tracing(self):
+        """ called from constructor or when the debugger window is opened again """
         sys.settrace(self.debugger.trace_function)
 
     def closeEvent(self, event):
@@ -272,6 +278,7 @@ class DebuggerWidget(QMainWindow):
             return
         tab_text = os.path.basename(filename)
         self.tab_widget.addTab(self.text_edits[filename], tab_text)
+        self.tab_widget.setTabToolTip(self.tab_widget.count()-1, filename)
         self.tab_widget.setCurrentWidget(self.text_edits[filename])
         self.text_edits[filename].cursorPositionChanged.connect(self.on_pos_changed)
         self.on_pos_changed()
