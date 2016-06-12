@@ -27,6 +27,7 @@ import traceback
 
 from variablesview import VariablesView
 from framesview import FramesView
+from highlighter import PythonHighlighter
 
 
 def format_frame(frame):
@@ -72,7 +73,8 @@ class Debugger(object):
             # we need to return tracing function for this frame - either None or this function...
 
             if frame.f_code.co_filename not in self.main_widget.text_edits:
-                if frame.f_code.co_filename == __file__:
+                # ignore files from this directory (so we do not debug the debugger!)
+                if os.path.dirname(frame.f_code.co_filename) == os.path.dirname(__file__):
                     return None  # do not trace this file
             return self.trace_function
 
@@ -126,7 +128,7 @@ class Debugger(object):
             print "trace", format_frames(frame), " | ", event, arg
 
 
-class SourceWidget(QTextEdit):
+class SourceWidget(QPlainTextEdit):
     def __init__(self, filename, parent=None):
         QTextEdit.__init__(self, parent)
 
@@ -134,6 +136,8 @@ class SourceWidget(QTextEdit):
         self.setPlainText(file_content)
         self.setFont(QFont("Courier"))
         # self.setReadOnly(True)  # does not show cursor :(
+
+        self.highlighter = PythonHighlighter(self.document())
 
         self.filename = filename
         self.breakpoints = []
