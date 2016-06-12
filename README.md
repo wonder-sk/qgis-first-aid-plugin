@@ -36,4 +36,3 @@ Custom Python error handler:
 
 Licensed under the terms of GNU GPL 2.
 
-Plugin icon by www.aha-soft.com, licensed as CC BY-NC-SA 3.0.

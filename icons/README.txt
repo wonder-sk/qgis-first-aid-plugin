@@ -1,3 +1,6 @@
+
+Plugin icon by www.aha-soft.com, licensed as CC BY-NC-SA 3.0.
+
 Icons sources:
 
 - bug - font-awesome project - http://fontawesome.io/license/
