@@ -79,7 +79,7 @@ class Debugger(object):
             return self.trace_function
 
         elif event == 'line':  # arg is always None
-            print "++ line", format_frame(frame)
+            #print "++ line", format_frame(frame)
             # TODO: resolve any symbolic links (both from "frame" and from "text_edits")
             filename = frame.f_code.co_filename
 
@@ -125,7 +125,8 @@ class Debugger(object):
             #print "++ return", arg
 
         else:
-            print "trace", format_frames(frame), " | ", event, arg
+            pass
+            #print "trace", format_frames(frame), " | ", event, arg
 
 
 class LineNumberArea(QWidget):

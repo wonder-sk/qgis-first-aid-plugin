@@ -86,12 +86,12 @@ class ConsoleWidget(QWidget):
         # because every time we ask for frame.f_locals, a new dict instance
         # is created - we keep our local cache that may contain some changes
         if self.frame_vars[index] is None:
-            print "init", index
+            #print "init", index
             frame = frame_from_traceback(self.tb, index)
             self.frame_vars[index] = (dict(frame.f_globals), dict(frame.f_locals))
 
         frame_vars = self.frame_vars[index]
-        print frame_vars[1]
+        #print frame_vars[1]
 
         line = self.console.text()
         try:

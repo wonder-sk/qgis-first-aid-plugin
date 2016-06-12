@@ -1,7 +1,7 @@
 [general]
 name=First Aid
 description=The must-have tool for Python plugin developers
-version=2.0
+version=2.0.1
 qgisMinimumVersion=2.0
 author=Martin Dobias
 email=wonder.sk@gmail.com
@@ -14,3 +14,8 @@ about=Provides Python debugger and replaces the default Python error handling in
   with a more sophisticated handler that allows more thorough inspection
   or the Python error: browse the frames, view variables, see source code
   or even execute Python code within the context of the error.
+
+changelog=2.0.1 - Bug fixes:
+  - fixed issues on Windows with print statements
+ <p>2.0 - New features:
+  - integrated debugger
