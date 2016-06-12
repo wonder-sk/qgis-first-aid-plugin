@@ -154,6 +154,8 @@ class SourceWidget(QPlainTextEdit):
         font.setPointSize(font.pointSize()-1)  # default is a bit too big for me
         self.setFont(font)
 
+        self.setLineWrapMode(QPlainTextEdit.NoWrap)
+
         self.setReadOnly(True)
         self.setTextInteractionFlags(self.textInteractionFlags() | Qt.TextSelectableByKeyboard)
 
