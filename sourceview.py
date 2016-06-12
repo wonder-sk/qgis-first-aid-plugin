@@ -75,7 +75,6 @@ class SourceView(QsciScintilla):
 
     def showEvent(self, event):
         QsciScintilla.showEvent(self, event)
-        print "SHOW"
         # prevent issues with initially invisible cursor / caret line
         self.setFocus()
         #self.jumpToLine(0)

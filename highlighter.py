@@ -27,7 +27,7 @@ STYLES = {
     'brace': format('darkGray'),
     'defclass': format('black', 'bold'),
     'string': format('crimson'),
-    'string2': format('crimson'),
+    'string2': format('darkgrey', 'italic'),
     'comment': format('darkgrey', 'italic'),
     'self': format('dodgerblue'),
     'numbers': format('brown'),

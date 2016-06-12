@@ -134,8 +134,15 @@ class SourceWidget(QPlainTextEdit):
 
         file_content = open(filename).read()
         self.setPlainText(file_content)
-        self.setFont(QFont("Courier"))
-        # self.setReadOnly(True)  # does not show cursor :(
+
+        # this should use the default mono spaced font as set in the system
+        font = QFont("Monospace")
+        font.setStyleHint(QFont.TypeWriter)
+        font.setPointSize(font.pointSize()-1)  # default is a bit too big for me
+        self.setFont(font)
+
+        self.setReadOnly(True)
+        self.setTextInteractionFlags(self.textInteractionFlags() | Qt.TextSelectableByKeyboard)
 
         self.highlighter = PythonHighlighter(self.document())
 
