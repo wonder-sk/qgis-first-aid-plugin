@@ -19,6 +19,7 @@ from debugwidget import DebugWidget
 from debuggerwidget import DebuggerWidget
 
 import handlers_qgis   # for introspection of QGIS types
+import handlers_qt
 
 dw = None
 
