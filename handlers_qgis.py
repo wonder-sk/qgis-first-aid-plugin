@@ -49,6 +49,12 @@ def handle_QgsVectorLayer(value, parent):
     make_item('featureCount', value.pendingFeatureCount(), parent)
     make_item('fields', value.pendingFields().toList(), parent)
 
+def handle_QgsVertexId(value, parent):
+    make_item('part', value.part, parent)
+    make_item('ring', value.ring, parent)
+    make_item('vertex', value.vertex, parent)
+    make_item('type', value.type, parent)
+
 def handle_QgsPointLocator_Match(value, parent):
     make_item('type', value.type(), parent)
     make_item('distance', value.distance(), parent)
@@ -67,3 +73,4 @@ custom_class_handlers[QgsPoint] = handle_QgsPoint
 custom_class_handlers[QgsPointLocator.Match] = handle_QgsPointLocator_Match
 custom_class_handlers[QgsRectangle] = handle_QgsRectangle
 custom_class_handlers[QgsVectorLayer] = handle_QgsVectorLayer
+custom_class_handlers[QgsVertexId] = handle_QgsVertexId
