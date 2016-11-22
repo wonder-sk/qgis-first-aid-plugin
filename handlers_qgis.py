@@ -8,6 +8,9 @@ def handle_QgsCoordinateReferenceSystem(value, parent):
     make_item('authId', value.authid(), parent)
     make_item('proj4', value.toProj4(), parent)
 
+def handle_QgsDataProvider(value, parent):
+    make_item('dataSourceUri', value.dataSourceUri(), parent)
+
 def handle_QgsFeature(value, parent):
     make_item('id', value.id(), parent)
     make_item('geometry', value.geometry(), parent)
@@ -32,10 +35,19 @@ def handle_QgsMapLayer(value, parent):
     make_item('name', value.name(), parent)
     make_item('extent', value.extent(), parent)
     make_item('crs', value.crs(), parent)
+    make_item('providerType', value.providerType(), parent)
 
 def handle_QgsPoint(value, parent):
     make_item('x', value.x(), parent)
     make_item('y', value.y(), parent)
+
+def handle_QgsRasterDataProvider(value, parent):
+    handle_QgsDataProvider(value, parent)
+
+def handle_QgsRasterLayer(value, parent):
+    # TODO: improve
+    handle_QgsMapLayer(value, parent)
+    make_item('dataProvider', value.dataProvider(), parent)
 
 def handle_QgsRectangle(value, parent):
     make_item('xMin', value.xMinimum(), parent)
@@ -43,11 +55,16 @@ def handle_QgsRectangle(value, parent):
     make_item('xMax', value.yMinimum(), parent)
     make_item('yMax', value.yMaximum(), parent)
 
+def handle_QgsVectorDataProvider(value, parent):
+    handle_QgsDataProvider(value, parent)
+    make_item('capabilities', value.capabilities(), parent)
+
 def handle_QgsVectorLayer(value, parent):
     # TODO: improve
     handle_QgsMapLayer(value, parent)
     make_item('featureCount', value.pendingFeatureCount(), parent)
     make_item('fields', value.pendingFields().toList(), parent)
+    make_item('dataProvider', value.dataProvider(), parent)
 
 def handle_QgsVertexId(value, parent):
     make_item('part', value.part, parent)
@@ -71,6 +88,9 @@ custom_class_handlers[QgsGeometry] = handle_QgsGeometry
 custom_class_handlers[QgsMapLayer] = handle_QgsMapLayer
 custom_class_handlers[QgsPoint] = handle_QgsPoint
 custom_class_handlers[QgsPointLocator.Match] = handle_QgsPointLocator_Match
+custom_class_handlers[QgsRasterDataProvider] = handle_QgsRasterDataProvider
+custom_class_handlers[QgsRasterLayer] = handle_QgsRasterLayer
 custom_class_handlers[QgsRectangle] = handle_QgsRectangle
+custom_class_handlers[QgsVectorDataProvider] = handle_QgsVectorDataProvider
 custom_class_handlers[QgsVectorLayer] = handle_QgsVectorLayer
 custom_class_handlers[QgsVertexId] = handle_QgsVertexId
