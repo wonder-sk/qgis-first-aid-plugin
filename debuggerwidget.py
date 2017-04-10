@@ -70,18 +70,19 @@ class Debugger(object):
     def trace_function(self, frame, event, arg):
         """ to be used for sys.trace """
         if event == 'call':   # arg is always None
+            filename = os.path.realpath(frame.f_code.co_filename)
+
             # we need to return tracing function for this frame - either None or this function...
 
-            if frame.f_code.co_filename not in self.main_widget.text_edits:
+            if filename not in self.main_widget.text_edits:
                 # ignore files from this directory (so we do not debug the debugger!)
-                if os.path.dirname(frame.f_code.co_filename) == os.path.dirname(__file__):
+                if os.path.dirname(filename) == os.path.dirname(os.path.realpath(__file__)):
                     return None  # do not trace this file
             return self.trace_function
 
         elif event == 'line':  # arg is always None
             #print "++ line", format_frame(frame)
-            # TODO: resolve any symbolic links (both from "frame" and from "text_edits")
-            filename = frame.f_code.co_filename
+            filename = os.path.realpath(frame.f_code.co_filename)
 
             if filename in self.main_widget.text_edits:
                 text_edit = self.main_widget.text_edits[filename]
@@ -261,7 +262,7 @@ class DebuggerWidget(QMainWindow):
 
         self.setWindowTitle("First Aid - Debugger")
 
-        self.text_edits = {}
+        self.text_edits = {} # fully expanded path of the file -> associated SourceWidget
         self.toolbar = self.addToolBar("General")
         self.toolbar.setObjectName("ToolbarGeneral")
 
@@ -349,6 +350,8 @@ class DebuggerWidget(QMainWindow):
 
 
     def load_file(self, filename):
+        filename = os.path.realpath(filename)
+
         if filename in self.text_edits:
             self.switch_to_file(filename)
             return   # already there...
