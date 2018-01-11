@@ -70,7 +70,7 @@ class Debugger(object):
     def trace_function(self, frame, event, arg):
         """ to be used for sys.trace """
         if event == 'call':   # arg is always None
-            filename = os.path.realpath(frame.f_code.co_filename)
+            filename = os.path.normpath(os.path.realpath(frame.f_code.co_filename))
 
             # we need to return tracing function for this frame - either None or this function...
 
@@ -82,7 +82,7 @@ class Debugger(object):
 
         elif event == 'line':  # arg is always None
             #print "++ line", format_frame(frame)
-            filename = os.path.realpath(frame.f_code.co_filename)
+            filename = os.path.normpath(os.path.realpath(frame.f_code.co_filename))
 
             if filename in self.main_widget.text_edits:
                 text_edit = self.main_widget.text_edits[filename]
@@ -350,7 +350,7 @@ class DebuggerWidget(QMainWindow):
 
 
     def load_file(self, filename):
-        filename = os.path.realpath(filename)
+        filename = os.path.normpath(os.path.realpath(filename))
 
         if filename in self.text_edits:
             self.switch_to_file(filename)
