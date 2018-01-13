@@ -17,6 +17,8 @@ about=Provides Python debugger and replaces the default Python error handling in
 
 changelog=2.0.2 - Bug fixes:
   - fixed issue with symbolic links on Linux (#5)
+  - fixed debugging on Windows (#7)
+  - few more handlers (QModelIndex, QgsVertexId, QgsDataProvider)
  <p>2.0.1 - Bug fixes:
   - fixed issues on Windows with print statements
  <p>2.0 - New features:
