@@ -1,3 +1,4 @@
+from __future__ import print_function
 # simple script to test debugger
 
 def fact(n):
@@ -17,7 +18,11 @@ def quicksort(lst):
     sorted_higher = quicksort(higher)
     return sorted_lower + [pivot] + sorted_higher
 
-print "3!", fact(3)
-print "4!", fact(4)
+# fix_print_with_import
+print("3!", fact(3))
+# fix_print_with_import
+print("4!", fact(4))
+# fix_print_with_import
 
-print quicksort([5,6,2,8,1,3,7,4])
+# fix_print_with_import
+print(quicksort([5,6,2,8,1,3,7,4]))
