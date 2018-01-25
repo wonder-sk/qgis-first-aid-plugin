@@ -16,7 +16,7 @@ from PyQt5.Qsci import QsciCommand
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import QApplication
-from qgis.PyQt.Qsci import QsciScintilla, QsciLexerPython
+from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 
 
 fontName = 'Courier'
@@ -56,7 +56,7 @@ class SourceView(QsciScintilla):
         # override style settings to the same font and size
         # (python lexer has styles 0 ... 15)
         for i in range(16):
-          self.SendScintilla(QsciScintilla.SCI_STYLESETFONT, i, fontName)
+          #self.SendScintilla(QsciScintilla.SCI_STYLESETFONT, i, fontName)
           self.SendScintilla(QsciScintilla.SCI_STYLESETSIZE, i, fontSize)
 
         # make the source read-only

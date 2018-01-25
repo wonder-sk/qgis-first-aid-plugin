@@ -4,6 +4,7 @@ import os
 from builtins import object
 
 import qgis.utils
+from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import QAction
 

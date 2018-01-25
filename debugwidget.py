@@ -178,9 +178,9 @@ class DebugWidget(QWidget):
         self.resize(800,600)
 
         s = QSettings()
-        self.splitterSrc.restoreState(s.value("/FirstAid/splitterSrc", ""))
-        self.splitterMain.restoreState(s.value("/FirstAid/splitterMain", ""))
-        self.restoreGeometry(s.value("/FirstAid/geometry", ""))
+        self.splitterSrc.restoreState(s.value("/FirstAid/splitterSrc", b""))
+        self.splitterMain.restoreState(s.value("/FirstAid/splitterMain", b""))
+        self.restoreGeometry(s.value("/FirstAid/geometry", b""))
 
         # select the last frame
         self.frames.setCurrentIndex(self.frames.model().index(len(self.entries)-1))

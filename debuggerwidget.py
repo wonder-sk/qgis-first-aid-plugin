@@ -224,7 +224,7 @@ class SourceWidget(QPlainTextEdit):
                 painter.setPen(Qt.black)
                 painter.drawText(0, top, self.lineNumberArea.width() - self.fontMetrics().width('9'),
                                  self.fontMetrics().height(), Qt.AlignRight, str(blockNumber + 1))
-            block = next(block)
+            block = block.next()
             top = bottom
             bottom = top + self.blockBoundingRect(block).height()
             blockNumber += 1
@@ -324,8 +324,8 @@ class DebuggerWidget(QMainWindow):
         self.update_buttons()
 
         settings = QSettings()
-        self.restoreGeometry(settings.value("/plugins/firstaid/debugger-geometry", ''))
-        self.restoreState(settings.value("/plugins/firstaid/debugger-windowstate", ''))
+        self.restoreGeometry(settings.value("/plugins/firstaid/debugger-geometry", b''))
+        self.restoreState(settings.value("/plugins/firstaid/debugger-windowstate", b''))
 
         filenames = settings.value("/plugins/firstaid/debugger-files", [])
         if filenames is None:
