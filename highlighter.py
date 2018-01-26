@@ -1,4 +1,4 @@
-from PyQt5.QtGui import QTextCharFormat, QSyntaxHighlighter
+from qgis.PyQt.QtGui import QTextCharFormat, QSyntaxHighlighter
 from qgis.PyQt.QtCore import QRegExp
 from qgis.PyQt.QtGui import QColor, QFont
 

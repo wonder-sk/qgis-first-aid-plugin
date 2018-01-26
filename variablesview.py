@@ -12,13 +12,13 @@
 from builtins import str
 from builtins import object
 import sip
-from PyQt5.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem, qApp, QStyle, QTreeView, QApplication
+from qgis.PyQt.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem, qApp, QStyle, QTreeView, QApplication
 
 sip.setapi('QVariant', 2)
 sip.setapi('QString', 2)
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
 
 
 Role_Name = Qt.UserRole+1

@@ -4,9 +4,9 @@ import os
 from builtins import object
 
 import qgis.utils
-from PyQt5.QtCore import QSettings
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import QAction
+from qgis.PyQt.QtCore import QSettings
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtWidgets import QAction
 
 from .debuggerwidget import DebuggerWidget
 from .debugwidget import DebugWidget

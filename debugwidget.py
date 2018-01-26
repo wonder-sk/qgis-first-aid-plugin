@@ -9,7 +9,7 @@ from __future__ import absolute_import
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 #---------------------------------------------------------------------
-from PyQt5.QtWidgets import QWidget, QLineEdit, QTextEdit, QVBoxLayout, QMessageBox, QSplitter, QApplication, QLabel
+from qgis.PyQt.QtWidgets import QWidget, QLineEdit, QTextEdit, QVBoxLayout, QMessageBox, QSplitter, QApplication, QLabel
 from future import standard_library
 standard_library.install_aliases()
 from builtins import str
@@ -17,8 +17,8 @@ import sip
 sip.setapi('QVariant', 2)
 sip.setapi('QString', 2)
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
 import sys
 
 from .variablesview import VariablesView

@@ -12,11 +12,11 @@
 from builtins import range
 import sys
 
-from PyQt5.Qsci import QsciCommand
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import QApplication
-from PyQt5.Qsci import QsciScintilla, QsciLexerPython
+from qgis.PyQt.Qsci import QsciCommand
+from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtWidgets import QApplication
+from qgis.PyQt.Qsci import QsciScintilla, QsciLexerPython
 
 
 fontName = 'Courier'

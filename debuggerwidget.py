@@ -6,7 +6,7 @@ from builtins import range
 from builtins import str
 
 import sip
-from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QMainWindow, QTabWidget, QDockWidget, QFileDialog, \
+from qgis.PyQt.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QMainWindow, QTabWidget, QDockWidget, QFileDialog, \
     QApplication
 from past.builtins import execfile
 
@@ -27,8 +27,8 @@ from past.builtins import execfile
 sip.setapi('QVariant', 2)
 sip.setapi('QString', 2)
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
 import os
 import sys
 import traceback

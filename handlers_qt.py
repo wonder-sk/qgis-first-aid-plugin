@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from PyQt5.QtCore import *
+from qgis.PyQt.QtCore import *
 
 from .variablesview import custom_class_handlers, make_item
 
