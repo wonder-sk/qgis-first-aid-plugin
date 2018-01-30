@@ -56,7 +56,7 @@ class SourceView(QsciScintilla):
         # override style settings to the same font and size
         # (python lexer has styles 0 ... 15)
         for i in range(16):
-          #self.SendScintilla(QsciScintilla.SCI_STYLESETFONT, i, fontName)
+          self.SendScintilla(QsciScintilla.SCI_STYLESETFONT, i, fontName)
           self.SendScintilla(QsciScintilla.SCI_STYLESETSIZE, i, fontSize)
 
         # make the source read-only

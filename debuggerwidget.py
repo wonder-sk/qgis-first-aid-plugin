@@ -388,17 +388,25 @@ class DebuggerWidget(QMainWindow):
                 del self.text_edits[filename]
                 break
 
+    def get_file_name(self, args):
+        if isinstance(args, tuple):
+            return args[0]
+        elif isinstance(args, str):
+            return args
+
+        return ""
+
+
     def on_load(self):
 
         settings = QSettings()
         folder = settings.value("firstaid/lastFolder", '')
 
-        filename, __ = QFileDialog.getOpenFileName(self, "Load", folder, "Python files (*.py)")
-        if filename == '':
-            return
+        args = QFileDialog.getOpenFileName(self, "Load", folder, "Python files (*.py)")
+        filename = self.get_file_name(args)
+        if not filename: return 
 
         settings.setValue("firstaid/lastFolder", os.path.dirname(filename))
-
         self.load_file(filename)
 
     def on_tab_close_requested(self, index):
