@@ -109,7 +109,7 @@ class ConsoleWidget(QWidget):
             return
 
         import io
-        io = io.StringIO()
+        io = io.StringIO() if sys.version_info.major >= 3 else io.BytesIO()
         try:
             with stdout_redirected(io):
                 exec(c, frame_vars[0], frame_vars[1])
