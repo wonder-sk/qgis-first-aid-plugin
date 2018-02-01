@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #-----------------------------------------------------------
 # Copyright (C) 2015 Martin Dobias
 #-----------------------------------------------------------
@@ -8,18 +9,21 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 #---------------------------------------------------------------------
-
+from qgis.PyQt.QtWidgets import QWidget, QLineEdit, QTextEdit, QVBoxLayout, QMessageBox, QSplitter, QApplication, QLabel
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
 import sip
 sip.setapi('QVariant', 2)
 sip.setapi('QString', 2)
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
 import sys
 
-from variablesview import VariablesView
-from sourceview import SourceView
-from framesview import FramesView
+from .variablesview import VariablesView
+from .sourceview import SourceView
+from .framesview import FramesView
 
 import code
 import traceback
@@ -96,7 +100,7 @@ class ConsoleWidget(QWidget):
         line = self.console.text()
         try:
             c = self.compiler(line, "<console>", "single")
-        except (OverflowError, SyntaxError, ValueError), e:
+        except (OverflowError, SyntaxError, ValueError) as e:
             QMessageBox.critical(self, "Error", str(e))
             return
 
@@ -104,14 +108,14 @@ class ConsoleWidget(QWidget):
             QMessageBox.critical(self, "Error", "Code not complete")
             return
 
-        import cStringIO
-        io = cStringIO.StringIO()
+        import io
+        io = io.StringIO()
         try:
             with stdout_redirected(io):
                 exec(c, frame_vars[0], frame_vars[1])
         except:
             etype, value, tb = sys.exc_info()
-            QMessageBox.critical(self, "Error", etype.__name__ + "\n" + unicode(value))
+            QMessageBox.critical(self, "Error", etype.__name__ + "\n" + str(value))
             return
 
         stuff = self.console_outs[index]
@@ -141,7 +145,7 @@ class DebugWidget(QWidget):
 
         self.setWindowTitle('Python Error')
 
-        msg = unicode(value).replace("\n", "<br>").replace(" ", "&nbsp;")
+        msg = str(value).replace("\n", "<br>").replace(" ", "&nbsp;")
         self.error = QLabel("<h1>"+etype.__name__+"</h1><b>"+msg+"</b>")
         self.error.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
@@ -174,9 +178,9 @@ class DebugWidget(QWidget):
         self.resize(800,600)
 
         s = QSettings()
-        self.splitterSrc.restoreState(s.value("/FirstAid/splitterSrc", ""))
-        self.splitterMain.restoreState(s.value("/FirstAid/splitterMain", ""))
-        self.restoreGeometry(s.value("/FirstAid/geometry", ""))
+        self.splitterSrc.restoreState(s.value("/FirstAid/splitterSrc", b""))
+        self.splitterMain.restoreState(s.value("/FirstAid/splitterMain", b""))
+        self.restoreGeometry(s.value("/FirstAid/geometry", b""))
 
         # select the last frame
         self.frames.setCurrentIndex(self.frames.model().index(len(self.entries)-1))
@@ -225,7 +229,7 @@ if __name__ == '__main__':
     QCoreApplication.setApplicationName("Test App")
     try:
         call_err()
-    except StandardError, e:
+    except Exception as e:
         w = DebugWidget(sys.exc_info())
         w.show()
     a.exec_()

@@ -9,11 +9,13 @@
 # (at your option) any later version.
 #---------------------------------------------------------------------
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
 
 import os
 import traceback
+
+from qgis.PyQt.QtWidgets import QTreeView
 
 
 class FramesModel(QAbstractListModel):

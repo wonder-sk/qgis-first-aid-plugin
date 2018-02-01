@@ -9,12 +9,16 @@
 # (at your option) any later version.
 #---------------------------------------------------------------------
 
+from builtins import str
+from builtins import object
 import sip
+from qgis.PyQt.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem, qApp, QStyle, QTreeView, QApplication
+
 sip.setapi('QVariant', 2)
 sip.setapi('QString', 2)
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
 
 
 Role_Name = Qt.UserRole+1
@@ -67,8 +71,8 @@ class DictTreeItem(VariablesTreeItem):
     def populate_children(self):
         self.populated_children = True
         all_strs = True
-        for k,v in self.value.iteritems():
-            if not isinstance(k, basestring): all_strs = False
+        for k,v in list(self.value.items()):
+            if not isinstance(k, str): all_strs = False
             make_item(str(k), v, self)
 
         # sort items alphabetically
@@ -102,7 +106,7 @@ class ObjectTreeItem(VariablesTreeItem):
 
     def populate_children(self):
         self.populated_children = True
-        for i,v in self.value.__dict__.iteritems():
+        for i,v in list(self.value.__dict__.items()):
             make_item(str(i), v, self)
 
         if self.custom_handler is not None:
@@ -140,7 +144,7 @@ def make_item(name, value, parent=None):
         return ListTreeItem(name, value, parent)
     elif hasattr(value, "__dict__"):
         return ObjectTreeItem(name, value, parent)
-    elif isinstance(value, basestring):
+    elif isinstance(value, str):
         return StringTreeItem(name, value, parent)
     else:
         return ScalarTreeItem(name, value, parent)
@@ -153,7 +157,7 @@ class VariablesDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
 
-        opt = QStyleOptionViewItemV4(option)
+        opt = QStyleOptionViewItem(option)
         self.initStyleOption(opt, index)
 
         # original command that would draw the whole thing with default style
@@ -272,7 +276,7 @@ class VariablesView(QTreeView):
 
 if __name__ == '__main__':
 
-    class TestClass:
+    class TestClass(object):
         A1 = 123
         def __init__(self):
             self.x = 456

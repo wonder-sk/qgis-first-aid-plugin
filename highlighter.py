@@ -1,8 +1,6 @@
-
-import sys
-
-from PyQt4.QtCore import QRegExp
-from PyQt4.QtGui import QColor, QTextCharFormat, QFont, QSyntaxHighlighter
+from qgis.PyQt.QtGui import QTextCharFormat, QSyntaxHighlighter
+from qgis.PyQt.QtCore import QRegExp
+from qgis.PyQt.QtGui import QColor, QFont
 
 def format(color, style=''):
     """Return a QTextCharFormat with the given attributes.

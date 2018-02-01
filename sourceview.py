@@ -9,10 +9,14 @@
 # (at your option) any later version.
 #---------------------------------------------------------------------
 
+from builtins import range
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.Qsci import QsciScintilla, QsciLexerPython, QsciCommand
+
+from qgis.PyQt.Qsci import QsciCommand
+from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtWidgets import QApplication
+from qgis.PyQt.Qsci import QsciScintilla, QsciLexerPython
 
 
 fontName = 'Courier'

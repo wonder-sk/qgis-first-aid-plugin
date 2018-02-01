@@ -1,7 +1,8 @@
+from __future__ import absolute_import
 
 from qgis.core import *
 
-from variablesview import custom_class_handlers, make_item
+from .variablesview import custom_class_handlers, make_item
 
 
 def handle_QgsCoordinateReferenceSystem(value, parent):

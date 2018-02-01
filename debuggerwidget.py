@@ -1,37 +1,46 @@
-#-----------------------------------------------------------
+from __future__ import absolute_import
+
+from builtins import next
+from builtins import object
+from builtins import range
+from builtins import str
+
+import sip
+from qgis.PyQt.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QMainWindow, QTabWidget, QDockWidget, QFileDialog, \
+    QApplication
+from past.builtins import execfile
+
+# -----------------------------------------------------------
 # Copyright (C) 2015 Martin Dobias
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # Licensed under the terms of GNU GPL 2
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-#---------------------------------------------------------------------
-
+# ---------------------------------------------------------------------
 # TODO:
 # - keep list of breakpoints between sessions
 # - list of breakpoints in dock
 # - handle stepping out of traced file (exit event loop)
-
-import sip
 sip.setapi('QVariant', 2)
 sip.setapi('QString', 2)
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
 import os
 import sys
-import bdb
 import traceback
 
-from variablesview import VariablesView
-from framesview import FramesView
-from highlighter import PythonHighlighter
+from .variablesview import VariablesView
+from .framesview import FramesView
+from .highlighter import PythonHighlighter
 
 
 def format_frame(frame):
     return "<FRAME %s:%d :: %s>" % (frame.f_code.co_filename, frame.f_lineno, frame.f_code.co_name)
+
 
 def format_frames(frame):
     if frame.f_back is not None:
@@ -41,12 +50,14 @@ def format_frames(frame):
     ret += format_frame(frame)
     return ret
 
+
 def frame_depth(frame):
     depth = 0
     while frame is not None:
         depth += 1
         frame = frame.f_back
     return depth
+
 
 def _is_deeper_frame(f0_filename, f0_lineno, f1):
     """whether f1 has been called from f0_filename:f0_lineno (directly or indirectly)"""
@@ -56,8 +67,8 @@ def _is_deeper_frame(f0_filename, f0_lineno, f1):
         f1 = f1.f_back
     return False
 
-class Debugger(object):
 
+class Debugger(object):
     def __init__(self, main_widget):
 
         self.ev_loop = QEventLoop()
@@ -69,7 +80,7 @@ class Debugger(object):
 
     def trace_function(self, frame, event, arg):
         """ to be used for sys.trace """
-        if event == 'call':   # arg is always None
+        if event == 'call':  # arg is always None
             filename = os.path.normpath(os.path.realpath(frame.f_code.co_filename))
 
             # we need to return tracing function for this frame - either None or this function...
@@ -81,7 +92,7 @@ class Debugger(object):
             return self.trace_function
 
         elif event == 'line':  # arg is always None
-            #print "++ line", format_frame(frame)
+            # print "++ line", format_frame(frame)
             filename = os.path.normpath(os.path.realpath(frame.f_code.co_filename))
 
             if filename in self.main_widget.text_edits:
@@ -91,7 +102,7 @@ class Debugger(object):
                 text_edit = None
                 breakpoints = []
 
-            if self.stepping or frame.f_lineno-1 in breakpoints:
+            if self.stepping or frame.f_lineno - 1 in breakpoints:
                 if isinstance(self.next_step, tuple):
                     if self.next_step[0] == 'over':
                         prev_filename = self.next_step[1]
@@ -117,21 +128,20 @@ class Debugger(object):
                 self.main_widget.update_buttons()
                 self.main_widget.raise_()
                 self.main_widget.activateWindow()
-                self.ev_loop.exec_()   # this will halt execution here for some time
+                self.ev_loop.exec_()  # this will halt execution here for some time
                 self.stopped = False
                 self.main_widget.update_buttons()
 
         elif event == 'return':  # arg is return value
             pass
-            #print "++ return", arg
+            # print "++ return", arg
 
         else:
             pass
-            #print "trace", format_frames(frame), " | ", event, arg
+            # print "trace", format_frames(frame), " | ", event, arg
 
 
 class LineNumberArea(QWidget):
-
     def __init__(self, editor):
         QWidget.__init__(self, editor)
         self.editor = editor
@@ -153,7 +163,7 @@ class SourceWidget(QPlainTextEdit):
         # this should use the default mono spaced font as set in the system
         font = QFont("Monospace")
         font.setStyleHint(QFont.TypeWriter)
-        font.setPointSize(font.pointSize()-1)  # default is a bit too big for me
+        font.setPointSize(font.pointSize() - 1)  # default is a bit too big for me
         self.setFont(font)
 
         self.setLineWrapMode(QPlainTextEdit.NoWrap)
@@ -181,7 +191,7 @@ class SourceWidget(QPlainTextEdit):
         while max_digit >= 10:
             max_digit /= 10
             digits += 1
-        return self.fontMetrics().width('9') * (digits+2)
+        return self.fontMetrics().width('9') * (digits + 2)
 
     def updateLineNumberAreaWidth(self, newBlockCount):
         self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
@@ -203,7 +213,7 @@ class SourceWidget(QPlainTextEdit):
     def lineNumberAreaPaintEvent(self, event):
         painter = QPainter(self.lineNumberArea)
         painter.fillRect(event.rect(), Qt.white)
-        painter.fillRect(QRect(event.rect().right()-1, event.rect().top(), 1, event.rect().height()), Qt.lightGray)
+        painter.fillRect(QRect(event.rect().right() - 1, event.rect().top(), 1, event.rect().height()), Qt.lightGray)
         block = self.firstVisibleBlock()
         blockNumber = block.blockNumber()
         top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
@@ -213,7 +223,7 @@ class SourceWidget(QPlainTextEdit):
             if block.isVisible() and bottom >= event.rect().top():
                 painter.setPen(Qt.black)
                 painter.drawText(0, top, self.lineNumberArea.width() - self.fontMetrics().width('9'),
-                                 self.fontMetrics().height(), Qt.AlignRight, str(blockNumber+1))
+                                 self.fontMetrics().height(), Qt.AlignRight, str(blockNumber + 1))
             block = block.next()
             top = bottom
             bottom = top + self.blockBoundingRect(block).height()
@@ -243,13 +253,13 @@ class SourceWidget(QPlainTextEdit):
 
         # breakpoints
         for bp_line_no in self.breakpoints:
-            sel.append(_highlight(bp_line_no, QColor(255,180,180)))
+            sel.append(_highlight(bp_line_no, QColor(255, 180, 180)))
 
         # debug line
         if self.debug_line != -1:
-            sel.append(_highlight(self.debug_line-1, QColor(180,255,255)))
+            sel.append(_highlight(self.debug_line - 1, QColor(180, 255, 255)))
             # also scroll to the line
-            block = self.document().findBlockByLineNumber(self.debug_line-1)
+            block = self.document().findBlockByLineNumber(self.debug_line - 1)
             self.setTextCursor(QTextCursor(block))
             self.ensureCursorVisible()
 
@@ -262,7 +272,7 @@ class DebuggerWidget(QMainWindow):
 
         self.setWindowTitle("First Aid - Debugger")
 
-        self.text_edits = {} # fully expanded path of the file -> associated SourceWidget
+        self.text_edits = {}  # fully expanded path of the file -> associated SourceWidget
         self.toolbar = self.addToolBar("General")
         self.toolbar.setObjectName("ToolbarGeneral")
 
@@ -273,7 +283,7 @@ class DebuggerWidget(QMainWindow):
 
         self.setCentralWidget(self.tab_widget)
 
-        _icon = lambda x: QIcon(os.path.join(os.path.dirname(__file__), "icons", x+".svg"))
+        _icon = lambda x: QIcon(os.path.join(os.path.dirname(__file__), "icons", x + ".svg"))
 
         self.action_load = self.toolbar.addAction(_icon("folder-outline"), "Load Python file (Ctrl+O)", self.on_load)
         self.action_load.setShortcut("Ctrl+O")
@@ -290,7 +300,8 @@ class DebuggerWidget(QMainWindow):
         self.action_step_over.setShortcut("F10")
         self.action_step_out = self.toolbar.addAction(_icon("debug-step-out"), "Step out (Shift+F11)", self.on_step_out)
         self.action_step_out.setShortcut("Shift+F11")
-        self.action_run_to_cursor = self.toolbar.addAction(_icon("cursor-default-outline"), "Run to cursor (Ctrl+F10)", self.on_run_to_cursor)
+        self.action_run_to_cursor = self.toolbar.addAction(_icon("cursor-default-outline"), "Run to cursor (Ctrl+F10)",
+                                                           self.on_run_to_cursor)
         self.action_run_to_cursor.setShortcut("Ctrl+F10")
 
         self.vars_view = VariablesView()
@@ -306,15 +317,15 @@ class DebuggerWidget(QMainWindow):
         self.dock_vars.setWidget(self.vars_view)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_vars)
 
-        self.resize(800,800)
+        self.resize(800, 800)
 
         self.debugger = Debugger(self)
 
         self.update_buttons()
 
         settings = QSettings()
-        self.restoreGeometry(settings.value("/plugins/firstaid/debugger-geometry", ''))
-        self.restoreState(settings.value("/plugins/firstaid/debugger-windowstate", ''))
+        self.restoreGeometry(settings.value("/plugins/firstaid/debugger-geometry", b''))
+        self.restoreState(settings.value("/plugins/firstaid/debugger-windowstate", b''))
 
         filenames = settings.value("/plugins/firstaid/debugger-files", [])
         if filenames is None:
@@ -343,18 +354,17 @@ class DebuggerWidget(QMainWindow):
         settings.setValue("/plugins/firstaid/debugger-geometry", self.saveGeometry())
         settings.setValue("/plugins/firstaid/debugger-windowstate", self.saveState())
 
-        filenames = self.text_edits.keys()
+        filenames = list(self.text_edits.keys())
         settings.setValue("/plugins/firstaid/debugger-files", filenames)
 
         QMainWindow.closeEvent(self, event)
-
 
     def load_file(self, filename):
         filename = os.path.normpath(os.path.realpath(filename))
 
         if filename in self.text_edits:
             self.switch_to_file(filename)
-            return   # already there...
+            return  # already there...
         try:
             self.text_edits[filename] = SourceWidget(filename)
         except IOError:
@@ -362,7 +372,7 @@ class DebuggerWidget(QMainWindow):
             return
         tab_text = os.path.basename(filename)
         self.tab_widget.addTab(self.text_edits[filename], tab_text)
-        self.tab_widget.setTabToolTip(self.tab_widget.count()-1, filename)
+        self.tab_widget.setTabToolTip(self.tab_widget.count() - 1, filename)
         self.tab_widget.setCurrentWidget(self.text_edits[filename])
         self.text_edits[filename].cursorPositionChanged.connect(self.on_pos_changed)
         self.on_pos_changed()
@@ -372,23 +382,31 @@ class DebuggerWidget(QMainWindow):
             self.tab_widget.setCurrentWidget(self.text_edits[filename])
 
     def unload_file(self, filename):
-        for index in xrange(self.tab_widget.count()):
+        for index in range(self.tab_widget.count()):
             if self.text_edits[filename] == self.tab_widget.widget(index):
                 self.tab_widget.removeTab(index)
                 del self.text_edits[filename]
                 break
+
+    def get_file_name(self, args):
+        if isinstance(args, tuple):
+            return args[0]
+        elif isinstance(args, str):
+            return args
+
+        return ""
+
 
     def on_load(self):
 
         settings = QSettings()
         folder = settings.value("firstaid/lastFolder", '')
 
-        filename = QFileDialog.getOpenFileName(self, "Load", folder, "Python files (*.py)")
-        if filename == '':
-            return
+        args = QFileDialog.getOpenFileName(self, "Load", folder, "Python files (*.py)")
+        filename = self.get_file_name(args)
+        if not filename: return 
 
         settings.setValue("firstaid/lastFolder", os.path.dirname(filename))
-
         self.load_file(filename)
 
     def on_tab_close_requested(self, index):
@@ -428,7 +446,6 @@ class DebuggerWidget(QMainWindow):
         self.action_run_to_cursor.setEnabled(active)
         self.action_continue.setEnabled(active)
 
-
     def on_step_into(self):
         self.debugger.stepping = True
         self.debugger.next_step = None
@@ -436,7 +453,8 @@ class DebuggerWidget(QMainWindow):
 
     def on_step_over(self):
         self.debugger.stepping = True
-        self.debugger.next_step = ('over', self.debugger.current_frame.f_code.co_filename, self.debugger.current_frame.f_lineno)
+        self.debugger.next_step = (
+        'over', self.debugger.current_frame.f_code.co_filename, self.debugger.current_frame.f_lineno)
         self.debugger.ev_loop.exit(0)
 
     def on_step_out(self):

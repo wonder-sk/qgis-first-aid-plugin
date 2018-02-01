@@ -1,25 +1,26 @@
-#-----------------------------------------------------------
+from __future__ import absolute_import
+
+import os
+from builtins import object
+
+import qgis.utils
+from qgis.PyQt.QtCore import QSettings
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtWidgets import QAction
+
+from .debuggerwidget import DebuggerWidget
+from .debugwidget import DebugWidget
+
+# -----------------------------------------------------------
 # Copyright (C) 2015 Martin Dobias
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # Licensed under the terms of GNU GPL 2
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-#---------------------------------------------------------------------
-
-import os
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-
-import qgis.utils
-
-from debugwidget import DebugWidget
-from debuggerwidget import DebuggerWidget
-
-import handlers_qgis   # for introspection of QGIS types
-import handlers_qt
+# ---------------------------------------------------------------------
 
 dw = None
 
@@ -35,7 +36,7 @@ def classFactory(iface):
     return FirstAidPlugin(iface)
 
 
-class FirstAidPlugin:
+class FirstAidPlugin(object):
     def __init__(self, iface):
         self.old_show_exception = None
         self.debugger_widget = None
