@@ -4,9 +4,9 @@ import os
 from builtins import object
 
 import qgis.utils
-from qgis.PyQt.QtCore import QSettings
+from qgis.PyQt.QtCore import QMetaObject, QObject, QSettings, QThread, Qt, pyqtSlot
 from qgis.PyQt.QtGui import *
-from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtWidgets import QAction, qApp
 
 from .debuggerwidget import DebuggerWidget
 from .debugwidget import DebugWidget
@@ -23,13 +23,39 @@ from .debugwidget import DebugWidget
 # ---------------------------------------------------------------------
 
 dw = None
+deferred_dw_handler = None
 
-def showException(etype, value, tb, msg, *args, **kwargs):
+
+def show_debug_widget(debug_widget_data):
+    """ Opens exception dialog with data from debug_widget_data - should be tuple (etype, value, tb). Must be called from main thread. """
     global dw
     if dw is not None and dw.isVisible():
         return  # pass this exception while previous is being inspected
-    dw = DebugWidget((etype,value,tb))
+    dw = DebugWidget(debug_widget_data)
     dw.show()
+
+
+class DeferredExceptionObject(QObject):
+    """ Helper object that allows display of exceptions from worker threads: running of start_deferred() is requested from worker thread. """
+
+    def __init__(self, parent=None):
+        QObject.__init__(self, parent)
+        self.debug_widget_data = None
+
+    @pyqtSlot()
+    def start_deferred(self):
+        """ slot that gets run in main thread - safe to use GUI code """
+        show_debug_widget(self.debug_widget_data)
+
+
+def showException(etype, value, tb, msg, *args, **kwargs):
+    if QThread.currentThread() == qApp.thread():
+        # we can show the exception directly
+        show_debug_widget((etype,value,tb))
+    else:
+        # we need to pass the exception details to main thread - we can't do GUI stuff here
+        deferred_dw_handler.debug_widget_data = (etype,value,tb)
+        QMetaObject.invokeMethod(deferred_dw_handler, "start_deferred", Qt.QueuedConnection)
 
 
 def classFactory(iface):
@@ -52,6 +78,9 @@ class FirstAidPlugin(object):
         # hook to exception handling
         self.old_show_exception = qgis.utils.showException
         qgis.utils.showException = showException
+
+        global deferred_dw_handler
+        deferred_dw_handler = DeferredExceptionObject(qgis.utils.iface.mainWindow())
 
         icon = QIcon(os.path.join(os.path.dirname(__file__), "icons", "bug.svg"))
         self.action_debugger = QAction(icon, "Debug (F12)", qgis.utils.iface.mainWindow())
