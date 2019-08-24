@@ -51,16 +51,16 @@ class PythonHighlighter (QSyntaxHighlighter):
         # Comparison
         '==', '!=', '<', '<=', '>', '>=',
         # Arithmetic
-        '\+', '-', '\*', '/', '//', '\%', '\*\*',
+        r'\+', '-', r'\*', '/', '//', r'\%', r'\*\*',
         # In-place
-        '\+=', '-=', '\*=', '/=', '\%=',
+        r'\+=', '-=', r'\*=', '/=', r'\%=',
         # Bitwise
-        '\^', '\|', '\&', '\~', '>>', '<<',
+        r'\^', r'\|', r'\&', r'\~', '>>', '<<',
     ]
 
     # Python braces
     braces = [
-        '\{', '\}', '\(', '\)', '\[', '\]',
+        r'\{', r'\}', r'\(', r'\)', r'\[', r'\]',
     ]
     def __init__(self, document):
         QSyntaxHighlighter.__init__(self, document)
@@ -74,11 +74,11 @@ class PythonHighlighter (QSyntaxHighlighter):
         rules = []
 
         # Keyword, operator, and brace rules
-        rules += [(r'\b%s\b' % w, 0, STYLES['keyword'])
+        rules += [(r'\b' + w + r'\b', 0, STYLES['keyword'])
             for w in PythonHighlighter.keywords]
-        rules += [(r'%s' % o, 0, STYLES['operator'])
+        rules += [(o, 0, STYLES['operator'])
             for o in PythonHighlighter.operators]
-        rules += [(r'%s' % b, 0, STYLES['brace'])
+        rules += [(b, 0, STYLES['brace'])
             for b in PythonHighlighter.braces]
 
         # All other rules
