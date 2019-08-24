@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import warnings
 from builtins import next
 from builtins import object
 from builtins import range
@@ -8,7 +9,10 @@ from builtins import str
 import sip
 from qgis.PyQt.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QMainWindow, QTabWidget, QDockWidget, QFileDialog, \
     QApplication
-from past.builtins import execfile
+
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    from past.builtins import execfile
 
 # -----------------------------------------------------------
 # Copyright (C) 2015 Martin Dobias
