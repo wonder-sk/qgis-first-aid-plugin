@@ -191,7 +191,6 @@ class DebugWidget(QWidget):
         s = QSettings()
         self.splitterSrc.restoreState(s.value("/FirstAid/splitterSrc", b""))
         self.splitterMain.restoreState(s.value("/FirstAid/splitterMain", b""))
-        self.restoreGeometry(s.value("/FirstAid/geometry", b""))
 
         # select the last frame
         self.frames.setCurrentIndex(self.frames.model().index(len(self.entries)-1))
@@ -200,7 +199,6 @@ class DebugWidget(QWidget):
         s = QSettings()
         s.setValue("/FirstAid/splitterSrc", self.splitterSrc.saveState())
         s.setValue("/FirstAid/splitterMain", self.splitterMain.saveState())
-        s.setValue("/FirstAid/geometry", self.saveGeometry())
         QWidget.closeEvent(self, event)
 
     def current_frame_changed(self, current, previous):
