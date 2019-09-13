@@ -58,6 +58,36 @@ def stdout_redirected(new_stdout):
         sys.stdout = save_stdout
 
 
+class ConsoleInput(QLineEdit):
+
+    execLine = pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        QLineEdit.__init__(self, parent)
+        self.history = []
+        self.history_index = 0
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Up:
+            self.history_index = max(self.history_index - 1, -len(self.history))
+            self.setText(self.history[self.history_index])
+        elif event.key() == Qt.Key_Down:
+            if self.history_index == 0:
+                return
+            elif self.history_index == -1:
+                self.history_index = 0
+                self.clear()
+            else:
+                self.history_index += 1
+                self.setText(self.history[self.history_index])
+        elif event.key() == Qt.Key_Return:
+            self.history_index = 0
+            self.history.append(self.text())
+            self.execLine.emit(self.text())
+        else:
+            QLineEdit.keyPressEvent(self, event)
+
+
 class ConsoleWidget(QWidget):
     def __init__(self, exc_info, parent=None):
         QWidget.__init__(self, parent)
@@ -67,9 +97,9 @@ class ConsoleWidget(QWidget):
         self.tb = exc_info[2]
         self.entries = traceback.extract_tb(self.tb)
 
-        self.console = QLineEdit()
+        self.console = ConsoleInput()
         self.console.setPlaceholderText(">>> Python Console")
-        self.console.returnPressed.connect(self.exec_console)
+        self.console.execLine.connect(self.exec_console)
         self.console.setFont(QFont("Courier"))
 
         self.console_out = QTextEdit()
@@ -91,8 +121,7 @@ class ConsoleWidget(QWidget):
         self.console_out.setPlainText(self.console_outs[index])
         self.current_frame_index = index
 
-    def exec_console(self):
-
+    def exec_console(self, line):
         index = self.current_frame_index
         if index < 0: return
 
@@ -107,7 +136,6 @@ class ConsoleWidget(QWidget):
         frame_vars = self.frame_vars[index]
         #print frame_vars[1]
 
-        line = self.console.text()
         try:
             c = self.compiler(line, "<console>", "single")
         except (OverflowError, SyntaxError, ValueError) as e:
