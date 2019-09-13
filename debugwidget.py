@@ -9,7 +9,16 @@ from __future__ import absolute_import
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 #---------------------------------------------------------------------
-from qgis.PyQt.QtWidgets import QWidget, QLineEdit, QTextEdit, QVBoxLayout, QMessageBox, QSplitter, QApplication, QLabel
+from qgis.PyQt.QtWidgets import (QWidget,
+                                 QLineEdit,
+                                 QTextEdit,
+                                 QVBoxLayout,
+                                 QMessageBox,
+                                 QSplitter,
+                                 QApplication,
+                                 QLabel,
+                                 QDialog,
+                                 QDialogButtonBox)
 from future import standard_library
 standard_library.install_aliases()
 from builtins import str
@@ -19,6 +28,7 @@ sip.setapi('QString', 2)
 
 from qgis.PyQt.QtCore import *
 from qgis.PyQt.QtGui import *
+from qgis.gui import QgsGui
 import sys
 
 from .variablesview import VariablesView
@@ -173,6 +183,7 @@ class DebugWidget(QWidget):
         l = QVBoxLayout()
         l.addWidget(self.error)
         l.addWidget(self.splitterMain)
+        l.setContentsMargins(0,0,0,0)
         self.setLayout(l)
 
         self.resize(800,600)
@@ -209,6 +220,27 @@ class DebugWidget(QWidget):
         self.variables.setVariables(local_vars)
 
         self.console.go_to_frame(index)
+
+
+class DebugDialog(QDialog):
+
+    def __init__(self, exc_info, parent=None):
+        QDialog.__init__(self, parent)
+
+        self.setObjectName('FirstAidDebugDialog')
+        self.setWindowTitle('Python Error')
+
+        self.debug_widget = DebugWidget(exc_info)
+        layout = QVBoxLayout()
+        layout.addWidget(self.debug_widget, 1)
+
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Close)
+        layout.addWidget(self.button_box)
+
+        self.setLayout(layout)
+
+        QgsGui.enableAutoGeometryRestore(self)
+
 
 
 #####################################
