@@ -233,6 +233,7 @@ class DebugDialog(QDialog):
         layout.addWidget(self.debug_widget, 1)
 
         self.button_box = QDialogButtonBox(QDialogButtonBox.Close)
+        self.button_box.rejected.connect(self.reject)
         layout.addWidget(self.button_box)
 
         self.setLayout(layout)
