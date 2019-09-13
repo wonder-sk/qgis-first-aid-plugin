@@ -9,7 +9,7 @@ from qgis.PyQt.QtGui import *
 from qgis.PyQt.QtWidgets import QAction, qApp
 
 from .debuggerwidget import DebuggerWidget
-from .debugwidget import DebugWidget
+from .debugwidget import DebugDialog
 
 # -----------------------------------------------------------
 # Copyright (C) 2015 Martin Dobias
@@ -31,8 +31,13 @@ def show_debug_widget(debug_widget_data):
     global dw
     if dw is not None and dw.isVisible():
         return  # pass this exception while previous is being inspected
-    dw = DebugWidget(debug_widget_data)
+    dw = DebugDialog(debug_widget_data)
     dw.show()
+
+    #  yes, all the below are required. silly qt!
+    dw.raise_()
+    dw.activateWindow()
+    dw.setFocus()
 
 
 class DeferredExceptionObject(QObject):
