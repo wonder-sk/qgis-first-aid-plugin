@@ -205,8 +205,14 @@ class DebugWidget(QWidget):
 
         self.splitterMain = QSplitter(Qt.Vertical)
         self.splitterMain.addWidget(self.splitterSrc)
-        self.splitterMain.addWidget(self.variables)
-        self.splitterMain.addWidget(self.console)
+
+        interactive_widget = QWidget()
+        interactive_layout = QVBoxLayout()
+        interactive_layout.setContentsMargins(0, 0, 0, 0)
+        interactive_layout.addWidget(self.variables, 1)
+        interactive_layout.addWidget(self.console)
+        interactive_widget.setLayout(interactive_layout)
+        self.splitterMain.addWidget(interactive_widget)
 
         l = QVBoxLayout()
         l.addWidget(self.error)
