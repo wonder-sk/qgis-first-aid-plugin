@@ -69,8 +69,9 @@ class SourceView(QsciScintilla):
         self.setText(open(filename).read())
 
     def jumpToLine(self, line_number):
-
         self.setCursorPosition(line_number-1,0)
+        # prevent issues with initially invisible cursor / caret line
+        self.setFocus()
         self.standardCommands().find(QsciCommand.VerticalCentreCaret).execute()
 
     #def resizeEvent(self, event):
@@ -79,8 +80,6 @@ class SourceView(QsciScintilla):
 
     def showEvent(self, event):
         QsciScintilla.showEvent(self, event)
-        # prevent issues with initially invisible cursor / caret line
-        self.setFocus()
         #self.jumpToLine(0)
         # prevent issues with incorrect initial scroll position
         self.standardCommands().find(QsciCommand.VerticalCentreCaret).execute()
