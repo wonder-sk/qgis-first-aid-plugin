@@ -88,8 +88,8 @@ class FirstAidPlugin(object):
         deferred_dw_handler = DeferredExceptionObject(qgis.utils.iface.mainWindow())
 
         icon = QIcon(os.path.join(os.path.dirname(__file__), "icons", "bug.svg"))
-        self.action_debugger = QAction(icon, "Debug (F12)", qgis.utils.iface.mainWindow())
-        self.action_debugger.setShortcut("F12")
+        self.action_debugger = QAction(icon, "Debug (Ctrl + F12)", qgis.utils.iface.mainWindow())
+        self.action_debugger.setShortcut("Ctrl+F12")
         self.action_debugger.triggered.connect(self.run_debugger)
         qgis.utils.iface.addToolBarIcon(self.action_debugger)
 
