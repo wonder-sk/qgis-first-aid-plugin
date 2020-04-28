@@ -15,7 +15,8 @@ or even execute Python code within the context of the error.
 ## How to use it?
 
 Simply install the plugin and enable it. The custom error handler is registered automatically.
-In order to start the debugger, look for Debug icon in Plugins toolbar - or press F12. A new window
+In order to start the debugger, look for Debug icon in Plugins toolbar - or press F12 (Note: since
+version 2.1.4 this is Ctrl+F12 because F12 is used by development tools dock in QGIS >= 3.14). A new window
 will pop up where you can open files and set breakpoints. Debugging is active all the time while
 the debugger window is open. Once a breakpoint is reached, debugger window will be activated
 and ready to step through the code.
