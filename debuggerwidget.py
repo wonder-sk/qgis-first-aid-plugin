@@ -33,6 +33,7 @@ sip.setapi('QString', 2)
 
 from qgis.PyQt.QtCore import *
 from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtGui import QFontDatabase
 import os
 import sys
 import traceback
@@ -165,9 +166,7 @@ class SourceWidget(QPlainTextEdit):
         self.setPlainText(file_content)
 
         # this should use the default mono spaced font as set in the system
-        font = QFont("Monospace")
-        font.setStyleHint(QFont.TypeWriter)
-        font.setPointSize(font.pointSize() - 1)  # default is a bit too big for me
+        font = QFontDatabase.systemFont(QFontDatabase.FixedFont)
         self.setFont(font)
 
         self.setLineWrapMode(QPlainTextEdit.NoWrap)
@@ -408,7 +407,7 @@ class DebuggerWidget(QMainWindow):
 
         args = QFileDialog.getOpenFileName(self, "Load", folder, "Python files (*.py)")
         filename = self.get_file_name(args)
-        if not filename: return 
+        if not filename: return
 
         settings.setValue("firstaid/lastFolder", os.path.dirname(filename))
         self.load_file(filename)

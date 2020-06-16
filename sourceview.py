@@ -12,6 +12,7 @@
 from builtins import range
 import sys
 
+from qgis.gui import QgsCodeEditorPython
 from qgis.PyQt.Qsci import QsciCommand
 from qgis.PyQt.QtCore import *
 from qgis.PyQt.QtGui import *
@@ -26,43 +27,13 @@ caretBackground = QColor("#e4e4ff")
 # based on code from
 # http://eli.thegreenplace.net/2011/04/01/sample-using-qscintilla-with-pyqt
 
-class SourceView(QsciScintilla):
+class SourceView(QgsCodeEditorPython):
 
     def __init__(self, parent=None):
-        QsciScintilla.__init__(self, parent)
-
-        # Set the default font
-        font = QFont()
-        font.setFamily(fontName)
-        font.setFixedPitch(True)
-        font.setPointSize(fontSize)
-        fontmetrics = QFontMetrics(font)
-
-        # Margin 0 is used for line numbers
-        self.setMarginsFont(font)
-        self.setMarginWidth(1, fontmetrics.width("00000"))
-        self.setMarginLineNumbers(1, True)
-        #self.setMarginsBackgroundColor(QColor("#cccccc"))
-
-        # Brace matching: enable for a brace immediately before or after the current position
-        self.setBraceMatching(QsciScintilla.SloppyBraceMatch)
-
-        # Current line visible with special background color
-        self.setCaretLineVisible(True)
-        #self.setCaretLineBackgroundColor(caretBackground)
-
-        # Set Python lexer
-        self.setLexer(QsciLexerPython())
-        # override style settings to the same font and size
-        # (python lexer has styles 0 ... 15)
-        for i in range(16):
-          self.SendScintilla(QsciScintilla.SCI_STYLESETFONT, i, fontName.encode("ascii"))
-          self.SendScintilla(QsciScintilla.SCI_STYLESETSIZE, i, fontSize)
+        QgsCodeEditorPython.__init__(self, parent)
 
         # make the source read-only
         self.SendScintilla(QsciScintilla.SCI_SETREADONLY, True)
-
-
 
     def openFile(self, filename):
 
