@@ -117,6 +117,8 @@ class ConsoleWidget(QWidget):
         l.setContentsMargins(0,0,0,0)
         self.setLayout(l)
 
+        self.setFocusProxy(self.console)
+
     def go_to_frame(self, index):
         self.console_out.setPlainText(self.console_outs[index])
         self.current_frame_index = index
@@ -171,6 +173,9 @@ class ConsoleWidget(QWidget):
 
         self.console.setText('')
 
+    def insert_text(self, text):
+        self.console.insert(text)
+
 
 class DebugWidget(QWidget):
     def __init__(self, exc_info, parent=None):
@@ -200,6 +205,8 @@ class DebugWidget(QWidget):
         self.splitterSrc.setStretchFactor(1, 2)
 
         self.variables = VariablesView()
+
+        self.variables.object_picked.connect(self.on_view_object_picked)
 
         self.console = ConsoleWidget(exc_info)
 
@@ -252,6 +259,10 @@ class DebugWidget(QWidget):
         self.variables.setVariables(local_vars)
 
         self.console.go_to_frame(index)
+
+    def on_view_object_picked(self, name):
+        self.console.insert_text(name)
+        self.console.setFocus()
 
 
 class DebugDialog(QDialog):

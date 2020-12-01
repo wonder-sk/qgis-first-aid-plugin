@@ -265,13 +265,22 @@ class VariablesItemModel(QAbstractItemModel):
 
 
 class VariablesView(QTreeView):
+
+    object_picked = pyqtSignal(str)
+
     def __init__(self, parent=None):
         QTreeView.__init__(self, parent)
         self.setItemDelegate(VariablesDelegate(self))
+        self.doubleClicked.connect(self.on_item_double_click)
+        self.setExpandsOnDoubleClick(False)
 
     def setVariables(self, variables):
         model = VariablesItemModel(DictTreeItem('', variables), self)
         self.setModel(model)
+
+    def on_item_double_click(self, index):
+        name = index.data(Role_Name)
+        self.object_picked.emit(name)
 
 
 if __name__ == '__main__':
