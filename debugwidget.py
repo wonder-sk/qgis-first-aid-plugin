@@ -169,6 +169,41 @@ class ConsoleInput(QgsCodeEditorPython, code.InteractiveInterpreter):
         self.displayPrompt()
 
 
+class ShellOutputScintilla(QgsCodeEditorPython):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.refreshSettingsOutput()
+
+        self.setMinimumHeight(120)
+
+        self.setWrapMode(QsciScintilla.WrapCharacter)
+        self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
+
+    def initializeLexer(self):
+        super().initializeLexer()
+        self.setFoldingVisible(False)
+        self.setEdgeMode(QsciScintilla.EdgeNone)
+
+    def refreshSettingsOutput(self):
+        # Set Python lexer
+        self.initializeLexer()
+        self.setReadOnly(True)
+
+        self.setCaretWidth(0)  # NO (blinking) caret in the output
+
+    def get_end_pos(self):
+        """Return (line, index) position of the last character"""
+        line = self.lines() - 1
+        return line, len(self.text(line))
+
+    def move_cursor_to_end(self):
+        line, index = self.get_end_pos()
+        self.setCursorPosition(line, index)
+        self.ensureCursorVisible()
+        self.ensureLineVisible(line)
+
+
 class ConsoleWidget(QWidget):
     def __init__(self, exc_info, parent=None):
         QWidget.__init__(self, parent)
@@ -181,9 +216,7 @@ class ConsoleWidget(QWidget):
         self.console = ConsoleInput()
         self.console.execLine.connect(self.exec_console)
 
-        self.console_out = QTextEdit()
-        self.console_out.setReadOnly(True)
-        self.console_out.setFont(QFont("Courier"))
+        self.console_out = ShellOutputScintilla()
         self.console_out.setVisible(False)  # initially hidden
 
         self.console_outs = ['']*len(self.entries)
@@ -199,7 +232,7 @@ class ConsoleWidget(QWidget):
         self.setFocusProxy(self.console)
 
     def go_to_frame(self, index):
-        self.console_out.setPlainText(self.console_outs[index])
+        self.console_out.setText(self.console_outs[index])
         self.current_frame_index = index
 
     def exec_console(self, line):
@@ -242,13 +275,10 @@ class ConsoleWidget(QWidget):
         stuff += io.getvalue()
         self.console_outs[index] = stuff
 
-        self.console_out.setPlainText(stuff)
+        self.console_out.setText(stuff)
         self.console_out.setVisible(True)
         # make sure we are at the end
-        c = self.console_out.textCursor()
-        c.movePosition(QTextCursor.End)
-        self.console_out.setTextCursor(c)
-        self.console_out.ensureCursorVisible()
+        self.console_out.move_cursor_to_end()
 
         self.console.setText('')
 
