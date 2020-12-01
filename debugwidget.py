@@ -26,9 +26,14 @@ import sip
 sip.setapi('QVariant', 2)
 sip.setapi('QString', 2)
 
+from qgis.PyQt.Qsci import QsciScintilla
+
 from qgis.PyQt.QtCore import *
 from qgis.PyQt.QtGui import *
-from qgis.gui import QgsGui
+from qgis.gui import (
+    QgsGui,
+    QgsCodeEditorPython
+)
 import sys
 
 from .variablesview import VariablesView
@@ -58,19 +63,68 @@ def stdout_redirected(new_stdout):
         sys.stdout = save_stdout
 
 
-class ConsoleInput(QLineEdit):
+class ConsoleInput(QgsCodeEditorPython, code.InteractiveInterpreter):
 
     execLine = pyqtSignal(str)
 
     def __init__(self, parent=None):
-        QLineEdit.__init__(self, parent)
+        super(QgsCodeEditorPython, self).__init__(parent)
+        code.InteractiveInterpreter.__init__(self, locals=None)
+
         self.history = []
         self.history_index = 0
+
+        self.displayPrompt()
+
+        self.refreshSettingsShell()
+
+        # Don't want to see the horizontal scrollbar at all
+        # Use raw message to Scintilla here (all messages are documented
+        # here: http://www.scintilla.org/ScintillaDoc.html)
+        self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
+
+        self.setWrapMode(QsciScintilla.WrapCharacter)
+        self.SendScintilla(QsciScintilla.SCI_EMPTYUNDOBUFFER)
+
+    def initializeLexer(self):
+        super().initializeLexer()
+        self.setCaretLineVisible(False)
+        self.setLineNumbersVisible(False)  # NO linenumbers for the input line
+        self.setFoldingVisible(False)
+        # Margin 1 is used for the '>>>' prompt (console input)
+        self.setMarginLineNumbers(1, True)
+        self.setMarginWidth(1, "00000")
+        self.setMarginType(1, 5)  # TextMarginRightJustified=5
+
+        try:
+            from qgis.gui import QgsCodeEditorColorScheme
+            self.setMarginsBackgroundColor(self.color(QgsCodeEditorColorScheme.ColorRole.Background))
+        except ImportError:
+            pass
+
+        self.setEdgeMode(QsciScintilla.EdgeNone)
+
+    def _setMinimumHeight(self):
+        font = self.lexer().defaultFont(0)
+        fm = QFontMetrics(font)
+
+        self.setMinimumHeight(fm.height() + 10)
+
+    def displayPrompt(self, more=False):
+        self.SendScintilla(QsciScintilla.SCI_MARGINSETTEXT, 0, str.encode("..." if more else ">>>"))
+
+    def refreshSettingsShell(self):
+        # Set Python lexer
+        self.initializeLexer()
+
+        # Sets minimum height for input area based of font metric
+        self._setMinimumHeight()
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Up:
             self.history_index = max(self.history_index - 1, -len(self.history))
             self.setText(self.history[self.history_index])
+            self.displayPrompt()
         elif event.key() == Qt.Key_Down:
             if self.history_index == 0:
                 return
@@ -80,12 +134,39 @@ class ConsoleInput(QLineEdit):
             else:
                 self.history_index += 1
                 self.setText(self.history[self.history_index])
+            self.displayPrompt()
         elif event.key() == Qt.Key_Return:
             self.history_index = 0
-            self.history.append(self.text())
-            self.execLine.emit(self.text())
+
+            cmd = self.text()
+            self.history.append(cmd)
+
+            # prevents commands with more lines to break the console
+            # in the case they have a eol different from '\n'
+            self.setText('')
+            self.move_cursor_to_end()
+
+            self.execLine.emit(cmd)
         else:
-            QLineEdit.keyPressEvent(self, event)
+            super().keyPressEvent(event)
+
+    def get_end_pos(self):
+        """Return (line, index) position of the last character"""
+        line = self.lines() - 1
+        return line, len(self.text(line))
+
+    def insert_text(self, text):
+        cur_pos = self.getCursorPosition()
+        self.insert(text)
+        self.setCursorPosition(cur_pos[0], cur_pos[1] + len(text))
+
+    def move_cursor_to_end(self):
+        """Move cursor to end of text"""
+        line, index = self.get_end_pos()
+        self.setCursorPosition(line, index)
+        self.ensureCursorVisible()
+        self.ensureLineVisible(line)
+        self.displayPrompt()
 
 
 class ConsoleWidget(QWidget):
@@ -98,9 +179,7 @@ class ConsoleWidget(QWidget):
         self.entries = traceback.extract_tb(self.tb)
 
         self.console = ConsoleInput()
-        self.console.setPlaceholderText(">>> Python Console")
         self.console.execLine.connect(self.exec_console)
-        self.console.setFont(QFont("Courier"))
 
         self.console_out = QTextEdit()
         self.console_out.setReadOnly(True)
@@ -174,7 +253,7 @@ class ConsoleWidget(QWidget):
         self.console.setText('')
 
     def insert_text(self, text):
-        self.console.insert(text)
+        self.console.insert_text(text)
 
 
 class DebugWidget(QWidget):

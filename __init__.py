@@ -44,6 +44,7 @@ def show_debug_widget(debug_widget_data):
     dw.setFocus()
 
 
+
 class DeferredExceptionObject(QObject):
     """ Helper object that allows display of exceptions from worker threads: running of start_deferred() is requested from worker thread. """
 

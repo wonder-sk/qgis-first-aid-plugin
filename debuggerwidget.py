@@ -481,6 +481,7 @@ class DebuggerWidget(QMainWindow):
         self.debugger.ev_loop.exit(0)
 
 
+
 if __name__ == '__main__':
     a = QApplication(sys.argv)
     w = DebuggerWidget()
