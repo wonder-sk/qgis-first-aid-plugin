@@ -29,8 +29,14 @@ deferred_dw_handler = None
 def show_debug_widget(debug_widget_data):
     """ Opens exception dialog with data from debug_widget_data - should be tuple (etype, value, tb). Must be called from main thread. """
     global dw
-    if dw is not None and dw.isVisible():
-        return  # pass this exception while previous is being inspected
+    if dw is not None:
+        if dw.isVisible():
+            return  # pass this exception while previous is being inspected
+        else:
+            dw.close()
+            dw.deleteLater()
+            dw = None
+
     dw = DebugDialog(debug_widget_data)
     dw.show()
 
@@ -105,6 +111,12 @@ class FirstAidPlugin(object):
 
         # unhook from exception handling
         qgis.utils.showException = self.old_show_exception
+
+        global dw
+        if dw is not None:
+            dw.close()
+            dw.deleteLater()
+            dw = None
 
     def run_debugger(self):
         if self.debugger_widget is None:
