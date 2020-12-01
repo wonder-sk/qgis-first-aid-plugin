@@ -203,6 +203,8 @@ class DebugWidget(QWidget):
         self.splitterSrc.addWidget(self.source)
         self.splitterSrc.setStretchFactor(0, 1)
         self.splitterSrc.setStretchFactor(1, 2)
+        self.splitterSrc.setCollapsible(0, False)
+        self.splitterSrc.setCollapsible(1, False)
 
         self.variables = VariablesView()
 
@@ -213,13 +215,11 @@ class DebugWidget(QWidget):
         self.splitterMain = QSplitter(Qt.Vertical)
         self.splitterMain.addWidget(self.splitterSrc)
 
-        interactive_widget = QWidget()
-        interactive_layout = QVBoxLayout()
-        interactive_layout.setContentsMargins(0, 0, 0, 0)
-        interactive_layout.addWidget(self.variables, 1)
-        interactive_layout.addWidget(self.console)
-        interactive_widget.setLayout(interactive_layout)
-        self.splitterMain.addWidget(interactive_widget)
+        self.splitterMain.addWidget(self.variables)
+        self.splitterMain.addWidget(self.console)
+        self.splitterMain.setCollapsible(0, False)
+        self.splitterMain.setCollapsible(1, False)
+        self.splitterMain.setCollapsible(2, False)
 
         l = QVBoxLayout()
         l.addWidget(self.error)
@@ -236,11 +236,10 @@ class DebugWidget(QWidget):
         # select the last frame
         self.frames.setCurrentIndex(self.frames.model().index(len(self.entries)-1))
 
-    def closeEvent(self, event):
+    def save_state(self):
         s = QSettings()
         s.setValue("/FirstAid/splitterSrc", self.splitterSrc.saveState())
         s.setValue("/FirstAid/splitterMain", self.splitterMain.saveState())
-        QWidget.closeEvent(self, event)
 
     def current_frame_changed(self, current, previous):
         row = current.row()
@@ -285,7 +284,13 @@ class DebugDialog(QDialog):
 
         QgsGui.enableAutoGeometryRestore(self)
 
+    def reject(self):
+        self.debug_widget.save_state()
+        super().reject()
 
+    def closeEvent(self, event):
+        self.debug_widget.save_state()
+        super().closeEvent(event)
 
 #####################################
 # test
