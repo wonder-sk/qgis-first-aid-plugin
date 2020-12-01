@@ -7,6 +7,7 @@ import qgis.utils
 from qgis.PyQt.QtCore import QMetaObject, QObject, QSettings, QThread, Qt, pyqtSlot
 from qgis.PyQt.QtGui import *
 from qgis.PyQt.QtWidgets import QAction, qApp
+from qgis.PyQt import sip
 
 from .debuggerwidget import DebuggerWidget
 from .debugwidget import DebugDialog
@@ -29,16 +30,13 @@ deferred_dw_handler = None
 def show_debug_widget(debug_widget_data):
     """ Opens exception dialog with data from debug_widget_data - should be tuple (etype, value, tb). Must be called from main thread. """
     global dw
-    if dw is not None:
+    if dw is not None and not sip.isdeleted(dw):
         if dw.isVisible():
             return  # pass this exception while previous is being inspected
-        else:
-            dw.close()
-            dw.deleteLater()
-            dw = None
 
     dw = DebugDialog(debug_widget_data)
     dw.show()
+    dw.setAttribute(Qt.WA_DeleteOnClose)
 
     #  yes, all the below are required. silly qt!
     dw.raise_()
@@ -113,7 +111,7 @@ class FirstAidPlugin(object):
         qgis.utils.showException = self.old_show_exception
 
         global dw
-        if dw is not None:
+        if dw is not None and not sip.isdeleted(dw):
             dw.close()
             dw.deleteLater()
             dw = None
