@@ -22,9 +22,6 @@ from qgis.PyQt.QtWidgets import (QWidget,
 from future import standard_library
 standard_library.install_aliases()
 from builtins import str
-import sip
-sip.setapi('QVariant', 2)
-sip.setapi('QString', 2)
 
 from qgis.PyQt.Qsci import QsciScintilla
 

@@ -11,11 +11,7 @@
 
 from builtins import str
 from builtins import object
-import sip
 from qgis.PyQt.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem, qApp, QStyle, QTreeView, QApplication
-
-sip.setapi('QVariant', 2)
-sip.setapi('QString', 2)
 
 from qgis.PyQt.QtCore import *
 from qgis.PyQt.QtGui import *

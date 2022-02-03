@@ -6,7 +6,6 @@ from builtins import object
 from builtins import range
 from builtins import str
 
-import sip
 from qgis.PyQt.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QMainWindow, QTabWidget, QDockWidget, QFileDialog, \
     QApplication
 
@@ -28,8 +27,6 @@ with warnings.catch_warnings():
 # - keep list of breakpoints between sessions
 # - list of breakpoints in dock
 # - handle stepping out of traced file (exit event loop)
-sip.setapi('QVariant', 2)
-sip.setapi('QString', 2)
 
 from qgis.PyQt.QtCore import *
 from qgis.PyQt.QtGui import *
