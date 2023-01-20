@@ -222,7 +222,7 @@ class SourceWidget(QPlainTextEdit):
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 painter.setPen(Qt.black)
-                painter.drawText(0, top, self.lineNumberArea.width() - self.fontMetrics().width('9'),
+                painter.drawText(0, int(top), self.lineNumberArea.width() - self.fontMetrics().width('9'),
                                  self.fontMetrics().height(), Qt.AlignRight, str(blockNumber + 1))
             block = block.next()
             top = bottom
