@@ -159,7 +159,8 @@ class SourceWidget(QPlainTextEdit):
     def __init__(self, filename, parent=None):
         QTextEdit.__init__(self, parent)
 
-        file_content = open(filename).read()
+        with open(filename, "r", encoding="utf-8") as f:
+            file_content = f.read()
         self.setPlainText(file_content)
 
         # this should use the default mono spaced font as set in the system
