@@ -159,7 +159,8 @@ class SourceWidget(QPlainTextEdit):
     def __init__(self, filename, parent=None):
         QTextEdit.__init__(self, parent)
 
-        file_content = open(filename).read()
+        with open(filename, "r", encoding="utf-8") as f:
+            file_content = f.read()
         self.setPlainText(file_content)
 
         # this should use the default mono spaced font as set in the system
@@ -222,7 +223,7 @@ class SourceWidget(QPlainTextEdit):
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 painter.setPen(Qt.black)
-                painter.drawText(0, top, self.lineNumberArea.width() - self.fontMetrics().width('9'),
+                painter.drawText(0, int(top), self.lineNumberArea.width() - self.fontMetrics().width('9'),
                                  self.fontMetrics().height(), Qt.AlignRight, str(blockNumber + 1))
             block = block.next()
             top = bottom
