@@ -1,20 +1,32 @@
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # Copyright (C) 2015 Martin Dobias
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # Licensed under the terms of GNU GPL 2
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-#---------------------------------------------------------------------
+# ---------------------------------------------------------------------
 
-from builtins import str
-from builtins import object
-from qgis.PyQt.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem, qApp, QStyle, QTreeView, QApplication
+from qgis.PyQt.QtWidgets import (
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
+    qApp,
+    QStyle,
+    QTreeView,
+    QApplication
+)
 
-from qgis.PyQt.QtCore import *
-from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtCore import (
+    Qt,
+    QAbstractItemModel,
+    QModelIndex,
+    pyqtSignal
+)
+from qgis.PyQt.QtGui import (
+    QPen
+)
 
 
 Role_Name = Qt.UserRole+1
@@ -28,8 +40,7 @@ Role_Value = Qt.UserRole+3
 custom_class_handlers = {}
 
 
-
-class VariablesTreeItem(object):
+class VariablesTreeItem:
 
     def __init__(self, name, value, parent=None):
         self.name = name
@@ -52,7 +63,7 @@ class VariablesTreeItem(object):
         return type(self.value).__name__
 
     def populate_children(self):
-        assert False # not used in base class
+        assert False  # not used in base class
 
 
 class DictTreeItem(VariablesTreeItem):
@@ -67,13 +78,14 @@ class DictTreeItem(VariablesTreeItem):
     def populate_children(self):
         self.populated_children = True
         all_strs = True
-        for k,v in list(self.value.items()):
-            if not isinstance(k, str): all_strs = False
+        for k, v in list(self.value.items()):
+            if not isinstance(k, str):
+                all_strs = False
             make_item(str(k), v, self)
 
         # sort items alphabetically
         if all_strs:
-          self.children = sorted(self.children, key=lambda x: x.name)
+            self.children = sorted(self.children, key=lambda x: x.name)
 
 
 class ListTreeItem(VariablesTreeItem):
@@ -86,7 +98,7 @@ class ListTreeItem(VariablesTreeItem):
 
     def populate_children(self):
         self.populated_children = True
-        for i,v in enumerate(self.value):
+        for i, v in enumerate(self.value):
             make_item(str(i), v, self)
 
 
@@ -96,13 +108,13 @@ class ObjectTreeItem(VariablesTreeItem):
 
         self.custom_handler = None
         if hasattr(self.value, '__class__') and self.value.__class__ in custom_class_handlers:
-          self.custom_handler = custom_class_handlers[self.value.__class__]
+            self.custom_handler = custom_class_handlers[self.value.__class__]
 
         self.has_children = len(value.__dict__) > 0 or self.custom_handler is not None
 
     def populate_children(self):
         self.populated_children = True
-        for i,v in list(self.value.__dict__.items()):
+        for i, v in list(self.value.__dict__.items()):
             make_item(str(i), v, self)
 
         if self.custom_handler is not None:
@@ -112,6 +124,7 @@ class ObjectTreeItem(VariablesTreeItem):
 class ScalarTreeItem(VariablesTreeItem):
     def __init__(self, name, value, parent):
         VariablesTreeItem.__init__(self, name, value, parent)
+
 
 class StringTreeItem(VariablesTreeItem):
     def _is_internal(self):
@@ -131,9 +144,10 @@ class StringTreeItem(VariablesTreeItem):
         self.populated_children = True
         make_item('__str__', self.value, self)
 
+
 def make_item(name, value, parent=None):
     """ Generate VariablesTreeItem instance for the given variable """
-    #print "MAKING", name, value
+    # print "MAKING", name, value
     if isinstance(value, dict):
         return DictTreeItem(name, value, parent)
     elif isinstance(value, list):
@@ -146,7 +160,6 @@ def make_item(name, value, parent=None):
         return ScalarTreeItem(name, value, parent)
 
 
-
 class VariablesDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         QStyledItemDelegate.__init__(self, parent)
@@ -157,7 +170,7 @@ class VariablesDelegate(QStyledItemDelegate):
         self.initStyleOption(opt, index)
 
         # original command that would draw the whole thing with default style
-        #style.drawControl(QStyle.CE_ItemViewItem, opt, painter)
+        # style.drawControl(QStyle.CE_ItemViewItem, opt, painter)
 
         style = qApp.style()
         painter.save()
@@ -167,7 +180,7 @@ class VariablesDelegate(QStyledItemDelegate):
         style.drawPrimitive(QStyle.PE_PanelItemViewItem, opt, painter, None)
 
         text_margin = style.pixelMetric(QStyle.PM_FocusFrameHMargin, None, None) + 1
-        text_rect = opt.rect.adjusted(text_margin, 0, -text_margin, 0) # remove width padding
+        text_rect = opt.rect.adjusted(text_margin, 0, -text_margin, 0)  # remove width padding
 
         # variable name
         painter.save()
@@ -229,7 +242,7 @@ class VariablesItemModel(QAbstractItemModel):
         elif role == Role_Value:
             return item.val()
 
-        #return
+        # return
 
     def flags(self, index):
         if not index.isValid():
@@ -283,6 +296,7 @@ if __name__ == '__main__':
 
     class TestClass(object):
         A1 = 123
+
         def __init__(self):
             self.x = 456
 
@@ -306,7 +320,7 @@ if __name__ == '__main__':
     a = QApplication(sys.argv)
 
     tv = VariablesView()
-    tv.setVariables({'a': 1, 'ax': [5,6,7], 'b': {'c': 3, 'd': 4}, 'tv': tv, 'e': TestClass(), 'ls': long_string()})
+    tv.setVariables({'a': 1, 'ax': [5, 6, 7], 'b': {'c': 3, 'd': 4}, 'tv': tv, 'e': TestClass(), 'ls': long_string()})
     tv.show()
 
     a.exec_()

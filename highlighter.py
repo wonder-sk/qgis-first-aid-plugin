@@ -1,6 +1,13 @@
-from qgis.PyQt.QtGui import QTextCharFormat, QSyntaxHighlighter
+from qgis.PyQt.QtGui import (
+    QTextCharFormat,
+    QSyntaxHighlighter
+)
 from qgis.PyQt.QtCore import QRegExp
-from qgis.PyQt.QtGui import QColor, QFont
+from qgis.PyQt.QtGui import (
+    QColor,
+    QFont
+)
+
 
 def format(color, style=''):
     """Return a QTextCharFormat with the given attributes.
@@ -62,6 +69,7 @@ class PythonHighlighter (QSyntaxHighlighter):
     braces = [
         r'\{', r'\}', r'\(', r'\)', r'\[', r'\]',
     ]
+
     def __init__(self, document):
         QSyntaxHighlighter.__init__(self, document)
 
@@ -109,7 +117,6 @@ class PythonHighlighter (QSyntaxHighlighter):
         self.rules = [(QRegExp(pat), index, fmt)
             for (pat, index, fmt) in rules]
 
-
     def highlightBlock(self, text):
         """Apply syntax highlighting to the given block of text.
         """
@@ -130,7 +137,6 @@ class PythonHighlighter (QSyntaxHighlighter):
         in_multiline = self.match_multiline(text, *self.tri_single)
         if not in_multiline:
             in_multiline = self.match_multiline(text, *self.tri_double)
-
 
     def match_multiline(self, text, delimiter, in_state, style):
         """Do highlighting of multi-line strings. ``delimiter`` should be a
