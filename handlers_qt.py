@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 
-from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtCore import (
+    QModelIndex
+)
 
 from .variablesview import custom_class_handlers, make_item
 

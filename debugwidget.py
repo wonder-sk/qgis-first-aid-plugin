@@ -1,52 +1,59 @@
 from __future__ import absolute_import
-#-----------------------------------------------------------
-# Copyright (C) 2015 Martin Dobias
-#-----------------------------------------------------------
-# Licensed under the terms of GNU GPL 2
+# -----------------------------------------------------------
+#  Copyright (C) 2015 Martin Dobias
+# -----------------------------------------------------------
+#  Licensed under the terms of GNU GPL 2
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#---------------------------------------------------------------------
-from qgis.PyQt.QtWidgets import (QWidget,
-                                 QLineEdit,
-                                 QTextEdit,
-                                 QVBoxLayout,
-                                 QMessageBox,
-                                 QSplitter,
-                                 QApplication,
-                                 QLabel,
-                                 QDialog,
-                                 QDialogButtonBox)
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+# ---------------------------------------------------------------------
+
+import code
+import traceback
+import sys
+
+from contextlib import contextmanager
 from future import standard_library
 standard_library.install_aliases()
-from builtins import str
 
+from qgis.PyQt.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QMessageBox,
+    QSplitter,
+    QApplication,
+    QLabel,
+    QDialog,
+    QDialogButtonBox
+)
 from qgis.PyQt.Qsci import QsciScintilla
+from qgis.PyQt.QtCore import (
+    pyqtSignal,
+    Qt,
+    QSettings,
+    QCoreApplication
+)
+from qgis.PyQt.QtGui import (
+    QFontMetrics
+)
 
-from qgis.PyQt.QtCore import *
-from qgis.PyQt.QtGui import *
 from qgis.gui import (
     QgsGui,
     QgsCodeEditorPython
 )
-import sys
 
 from .variablesview import VariablesView
 from .sourceview import SourceView
 from .framesview import FramesView
 
-import code
-import traceback
-from contextlib import contextmanager
-
 
 def frame_from_traceback(tb, index):
     while index > 0:
-      #print vindex, tb
-      tb = tb.tb_next
-      index -= 1
+        # print vindex, tb
+        tb = tb.tb_next
+        index -= 1
     return tb.tb_frame
 
 
@@ -97,7 +104,7 @@ class ConsoleInput(QgsCodeEditorPython, code.InteractiveInterpreter):
             from qgis.gui import QgsCodeEditorColorScheme
             self.setMarginsBackgroundColor(self.color(QgsCodeEditorColorScheme.ColorRole.Background))
         except ImportError:
-            pass
+            QgsCodeEditorColorScheme = None
 
         self.setEdgeMode(QsciScintilla.EdgeNone)
 
@@ -223,7 +230,7 @@ class ConsoleWidget(QWidget):
         l = QVBoxLayout()
         l.addWidget(self.console_out)
         l.addWidget(self.console)
-        l.setContentsMargins(0,0,0,0)
+        l.setContentsMargins(0, 0, 0, 0)
         self.setLayout(l)
 
         self.setFocusProxy(self.console)
@@ -234,18 +241,19 @@ class ConsoleWidget(QWidget):
 
     def exec_console(self, line):
         index = self.current_frame_index
-        if index < 0: return
+        if index < 0:
+            return
 
         # cache frame variables (globals and locals)
         # because every time we ask for frame.f_locals, a new dict instance
         # is created - we keep our local cache that may contain some changes
         if self.frame_vars[index] is None:
-            #print "init", index
+            # print "init", index
             frame = frame_from_traceback(self.tb, index)
             self.frame_vars[index] = (dict(frame.f_globals), dict(frame.f_locals))
 
         frame_vars = self.frame_vars[index]
-        #print frame_vars[1]
+        # print frame_vars[1]
 
         try:
             c = self.compiler(line, "<console>", "single")
@@ -330,10 +338,10 @@ class DebugWidget(QWidget):
         l = QVBoxLayout()
         l.addWidget(self.error)
         l.addWidget(self.splitterMain)
-        l.setContentsMargins(0,0,0,0)
+        l.setContentsMargins(0, 0, 0, 0)
         self.setLayout(l)
 
-        self.resize(800,600)
+        self.resize(800, 600)
 
         s = QSettings()
         self.splitterSrc.restoreState(s.value("/FirstAid/splitterSrc", b""))
@@ -398,6 +406,7 @@ class DebugDialog(QDialog):
         self.debug_widget.save_state()
         super().closeEvent(event)
 
+
 #####################################
 # test
 
@@ -405,10 +414,12 @@ def err_here(a,b):
     c = a+b
     c += d
 
+
 def call_err():
     a = 1
     b = 2
     err_here(a,b)
+
 
 if __name__ == '__main__':
     a = QApplication(sys.argv)

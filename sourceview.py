@@ -1,23 +1,25 @@
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # Copyright (C) 2015 Martin Dobias
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # Licensed under the terms of GNU GPL 2
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-#---------------------------------------------------------------------
+# ---------------------------------------------------------------------
 
-from builtins import range
 import sys
 
 from qgis.gui import QgsCodeEditorPython
-from qgis.PyQt.Qsci import QsciCommand
-from qgis.PyQt.QtCore import *
-from qgis.PyQt.QtGui import *
+from qgis.PyQt.Qsci import (
+    QsciCommand,
+    QsciScintilla
+)
+from qgis.PyQt.QtGui import (
+    QColor
+)
 from qgis.PyQt.QtWidgets import QApplication
-from qgis.PyQt.Qsci import QsciScintilla, QsciLexerPython
 
 
 fontName = 'Courier'
@@ -26,6 +28,7 @@ caretBackground = QColor("#e4e4ff")
 
 # based on code from
 # http://eli.thegreenplace.net/2011/04/01/sample-using-qscintilla-with-pyqt
+
 
 class SourceView(QgsCodeEditorPython):
 
@@ -40,18 +43,18 @@ class SourceView(QgsCodeEditorPython):
         self.setText(open(filename).read())
 
     def jumpToLine(self, line_number):
-        self.setCursorPosition(line_number-1,0)
+        self.setCursorPosition(line_number-1, 0)
         # prevent issues with initially invisible cursor / caret line
         self.setFocus()
         self.standardCommands().find(QsciCommand.VerticalCentreCaret).execute()
 
-    #def resizeEvent(self, event):
-        #QsciScintilla.resizeEvent(self, event)
-        #print "RESIZE"
+    # def resizeEvent(self, event):
+        # QsciScintilla.resizeEvent(self, event)
+        # print "RESIZE"
 
     def showEvent(self, event):
         QsciScintilla.showEvent(self, event)
-        #self.jumpToLine(0)
+        # self.jumpToLine(0)
         # prevent issues with incorrect initial scroll position
         self.standardCommands().find(QsciCommand.VerticalCentreCaret).execute()
 

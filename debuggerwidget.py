@@ -1,18 +1,3 @@
-from __future__ import absolute_import
-
-import warnings
-from builtins import next
-from builtins import object
-from builtins import range
-from builtins import str
-
-from qgis.PyQt.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QMainWindow, QTabWidget, QDockWidget, QFileDialog, \
-    QApplication
-
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-    from past.builtins import execfile
-
 # -----------------------------------------------------------
 # Copyright (C) 2015 Martin Dobias
 # -----------------------------------------------------------
@@ -28,12 +13,42 @@ with warnings.catch_warnings():
 # - list of breakpoints in dock
 # - handle stepping out of traced file (exit event loop)
 
-from qgis.PyQt.QtCore import *
-from qgis.PyQt.QtGui import *
-from qgis.PyQt.QtGui import QFontDatabase
+
+from __future__ import absolute_import
 import os
 import sys
 import traceback
+import warnings
+
+from qgis.PyQt.QtCore import (
+    QEventLoop,
+    QSize,
+    Qt,
+    QRect,
+    QSettings
+)
+from qgis.PyQt.QtWidgets import (
+    QWidget,
+    QPlainTextEdit,
+    QTextEdit,
+    QMainWindow,
+    QTabWidget,
+    QDockWidget,
+    QFileDialog,
+    QApplication
+)
+from qgis.PyQt.QtGui import (
+    QFontDatabase,
+    QPainter,
+    QTextCursor,
+    QTextFormat,
+    QColor,
+    QIcon
+)
+
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    from past.builtins import execfile
 
 from .variablesview import VariablesView
 from .framesview import FramesView
@@ -70,7 +85,7 @@ def _is_deeper_frame(f0_filename, f0_lineno, f1):
     return False
 
 
-class Debugger(object):
+class Debugger:
     def __init__(self, main_widget):
 
         self.ev_loop = QEventLoop()
@@ -156,8 +171,9 @@ class LineNumberArea(QWidget):
 
 
 class SourceWidget(QPlainTextEdit):
+
     def __init__(self, filename, parent=None):
-        QTextEdit.__init__(self, parent)
+        super().__init__(parent)
 
         with open(filename, "r", encoding="utf-8") as f:
             file_content = f.read()
@@ -184,7 +200,7 @@ class SourceWidget(QPlainTextEdit):
         self.breakpoints = []
         self.debug_line = -1
 
-    ### support for line numbers - start
+    # support for line numbers - start
 
     def lineNumberAreaWidth(self):
         digits = 1
@@ -397,7 +413,6 @@ class DebuggerWidget(QMainWindow):
 
         return ""
 
-
     def on_load(self):
 
         settings = QSettings()
@@ -405,7 +420,8 @@ class DebuggerWidget(QMainWindow):
 
         args = QFileDialog.getOpenFileName(self, "Load", folder, "Python files (*.py)")
         filename = self.get_file_name(args)
-        if not filename: return
+        if not filename:
+            return
 
         settings.setValue("firstaid/lastFolder", os.path.dirname(filename))
         self.load_file(filename)
@@ -477,7 +493,6 @@ class DebuggerWidget(QMainWindow):
         self.vars_view.setVariables({})
         self.frames_view.setTraceback(None)
         self.debugger.ev_loop.exit(0)
-
 
 
 if __name__ == '__main__':

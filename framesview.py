@@ -1,21 +1,23 @@
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # Copyright (C) 2015 Martin Dobias
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # Licensed under the terms of GNU GPL 2
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-#---------------------------------------------------------------------
-
-from qgis.PyQt.QtCore import *
-from qgis.PyQt.QtGui import *
-
+# ---------------------------------------------------------------------
 import os
 import traceback
 
-from qgis.PyQt.QtWidgets import QTreeView
+from qgis.PyQt.QtCore import (
+    QAbstractListModel,
+    Qt
+)
+from qgis.PyQt.QtWidgets import (
+    QTreeView
+)
 
 
 class FramesModel(QAbstractListModel):
@@ -45,7 +47,7 @@ class FramesModel(QAbstractListModel):
 
     def headerData(self, section, orientation, role):
         if section == 0 and orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return "Traceback (most recent call last)" #"Frames"
+            return "Traceback (most recent call last)"  # "Frames"
 
 
 class FramesView(QTreeView):
