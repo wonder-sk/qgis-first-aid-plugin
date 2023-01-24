@@ -4,7 +4,7 @@ description=The must-have tool for Python plugin developers
 version=2.2.1
 qgisMinimumVersion=3.0
 qgisMaximumVersion=3.99
-author=Martin Dobias
+author=Martin Dobias, Zayne Tomlins
 email=wonder.sk@gmail.com
 icon=icon.png
 
