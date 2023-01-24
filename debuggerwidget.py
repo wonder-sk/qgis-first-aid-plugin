@@ -494,7 +494,6 @@ class DebuggerWidget(QMainWindow):
         self.frames_view.setTraceback(None)
         self.debugger.ev_loop.exit(0)
 
-
 if __name__ == '__main__':
     a = QApplication(sys.argv)
     w = DebuggerWidget()

@@ -11,9 +11,11 @@ from __future__ import absolute_import
 # ---------------------------------------------------------------------
 
 import code
+import os
 import traceback
 import sys
 
+from qgis.core import QgsApplication
 from contextlib import contextmanager
 from future import standard_library
 standard_library.install_aliases()
@@ -75,7 +77,9 @@ class ConsoleInput(QgsCodeEditorPython, code.InteractiveInterpreter):
         super(QgsCodeEditorPython, self).__init__(parent)
         code.InteractiveInterpreter.__init__(self, locals=None)
 
-        self.history = []
+
+
+        self.history = self.load_history()
         self.history_index = 0
 
         self.displayPrompt()
@@ -89,6 +93,16 @@ class ConsoleInput(QgsCodeEditorPython, code.InteractiveInterpreter):
 
         self.setWrapMode(QsciScintilla.WrapCharacter)
         self.SendScintilla(QsciScintilla.SCI_EMPTYUNDOBUFFER)
+
+    def load_history(self):
+        history = []
+        try:
+            with open(os.path.join(QgsApplication.qgisSettingsDirPath(), "first_aid_history.txt"), "r") as f:
+                for command in f:
+                    history.append(command.strip("\n"))
+        except FileNotFoundError:
+            pass
+        return history[::-1]
 
     def initializeLexer(self):
         super().initializeLexer()
@@ -290,7 +304,6 @@ class ConsoleWidget(QWidget):
     def insert_text(self, text):
         self.console.insert_text(text)
 
-
 class DebugWidget(QWidget):
     def __init__(self, exc_info, parent=None):
         QWidget.__init__(self, parent)
@@ -355,6 +368,14 @@ class DebugWidget(QWidget):
         s.setValue("/FirstAid/splitterSrc", self.splitterSrc.saveState())
         s.setValue("/FirstAid/splitterMain", self.splitterMain.saveState())
 
+        with open(os.path.join(QgsApplication.qgisSettingsDirPath(), "first_aid_history.txt"), "w+") as f:
+            i = 0
+            for command in self.console.console.history[::-1]:
+                f.write("%s\n" % (command))
+                i += 1
+                if i > 100:
+                    break
+
     def current_frame_changed(self, current, previous):
         row = current.row()
         if row >= 0 and row < len(self.entries):
@@ -376,7 +397,6 @@ class DebugWidget(QWidget):
     def on_view_object_picked(self, name):
         self.console.insert_text(name)
         self.console.setFocus()
-
 
 class DebugDialog(QDialog):
 
@@ -401,10 +421,6 @@ class DebugDialog(QDialog):
     def reject(self):
         self.debug_widget.save_state()
         super().reject()
-
-    def closeEvent(self, event):
-        self.debug_widget.save_state()
-        super().closeEvent(event)
 
 
 #####################################
@@ -431,3 +447,4 @@ if __name__ == '__main__':
         w = DebugWidget(sys.exc_info())
         w.show()
     a.exec_()
+
