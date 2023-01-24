@@ -324,7 +324,6 @@ class VariablesView(QTreeView):
         else:
             name = ".%s" % name
 
-        print(name)
         return name
 
 if __name__ == '__main__':
