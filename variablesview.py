@@ -32,6 +32,7 @@ from qgis.PyQt.QtGui import (
 Role_Name = Qt.UserRole+1
 Role_Type = Qt.UserRole+2
 Role_Value = Qt.UserRole+3
+Role_Parent = Qt.UserRole+4
 
 
 # database of handlers for custom classes to allow better introspection
@@ -57,6 +58,7 @@ class VariablesTreeItem:
         return repr(self.value)
 
     def text(self):
+        #return "%s = {%s} %s" % (self.name, self.type_name(), self.val())
         return "%s = {%s} %s" % (self.name, self.type_name(), self.val())
 
     def type_name(self):
@@ -239,6 +241,8 @@ class VariablesItemModel(QAbstractItemModel):
             return item.name
         elif role == Role_Type:
             return item.type_name()
+        elif role == Role_Parent:
+            return item.parent
         elif role == Role_Value:
             return item.val()
 
@@ -279,6 +283,7 @@ class VariablesView(QTreeView):
 
     def __init__(self, parent=None):
         QTreeView.__init__(self, parent)
+        self.parent = parent
         self.setItemDelegate(VariablesDelegate(self))
         self.doubleClicked.connect(self.on_item_double_click)
         self.setExpandsOnDoubleClick(False)
@@ -289,8 +294,34 @@ class VariablesView(QTreeView):
 
     def on_item_double_click(self, index):
         name = index.data(Role_Name)
-        self.object_picked.emit(name)
+        parent = index.data(Role_Parent)
+        if parent.name is not None and parent.name is not "":
+            name = self.parent_item_is_container(name, parent)
+            self.object_picked.emit("%s%s" % (self.get_variable_parent_name(parent)[1:], name))
+        else:
+            self.object_picked.emit(name)
 
+
+    def get_variable_parent_name(self, parent):
+        if parent.parent is not None:
+            name = self.get_variable_parent_name(parent.parent)
+            if isinstance(parent.parent.value, list):
+                print("is list")
+                return "%s[%s]" % (name, parent.name)
+            else:
+                return "%s.%s" % (name, parent.name)
+
+        else:
+            return parent.name
+
+    def parent_item_is_container(self, name, parent):
+        if isinstance(parent.value, list):
+            name = "[%s]" % name
+        else:
+            name = ".%s" % name
+
+        print(name)
+        return name
 
 if __name__ == '__main__':
 
