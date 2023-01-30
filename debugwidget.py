@@ -102,7 +102,7 @@ class ConsoleInput(QgsCodeEditorPython, code.InteractiveInterpreter):
                     history.append(command.strip("\n"))
         except FileNotFoundError:
             pass
-        return history[::-1]
+        return history
 
     def initializeLexer(self):
         super().initializeLexer()
@@ -369,12 +369,8 @@ class DebugWidget(QWidget):
         s.setValue("/FirstAid/splitterMain", self.splitterMain.saveState())
 
         with open(os.path.join(QgsApplication.qgisSettingsDirPath(), "first_aid_history.txt"), "w+") as f:
-            i = 0
-            for command in self.console.console.history[::-1]:
-                f.write("%s\n" % (command))
-                i += 1
-                if i > 100:
-                    break
+            for command in self.console.console.history[-100:]:
+                f.write("{}\n".format(command))
 
     def current_frame_changed(self, current, previous):
         row = current.row()

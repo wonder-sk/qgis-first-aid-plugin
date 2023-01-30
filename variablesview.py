@@ -58,8 +58,7 @@ class VariablesTreeItem:
         return repr(self.value)
 
     def text(self):
-        #return "%s = {%s} %s" % (self.name, self.type_name(), self.val())
-        return "%s = {%s} %s" % (self.name, self.type_name(), self.val())
+        return "{} = {{{}}} {}".format(self.name, self.type_name(), self.val())
 
     def type_name(self):
         return type(self.value).__name__
@@ -283,7 +282,6 @@ class VariablesView(QTreeView):
 
     def __init__(self, parent=None):
         QTreeView.__init__(self, parent)
-        self.parent = parent
         self.setItemDelegate(VariablesDelegate(self))
         self.doubleClicked.connect(self.on_item_double_click)
         self.setExpandsOnDoubleClick(False)
@@ -295,9 +293,9 @@ class VariablesView(QTreeView):
     def on_item_double_click(self, index):
         name = index.data(Role_Name)
         parent = index.data(Role_Parent)
-        if parent.name is not None and parent.name is not "":
-            name = self.parent_item_is_container(name, parent)
-            self.object_picked.emit("%s%s" % (self.get_variable_parent_name(parent)[1:], name))
+        if parent.name:
+            name = self.format_item_name_for_container_access(name, parent)
+            self.object_picked.emit("{}{}".format(self.get_variable_parent_name(parent)[1:], name))
         else:
             self.object_picked.emit(name)
 
@@ -306,23 +304,23 @@ class VariablesView(QTreeView):
         if parent.parent is not None:
             name = self.get_variable_parent_name(parent.parent)
             if isinstance(parent.parent.value, list) or isinstance(parent.parent.value, tuple):
-                return "%s[%s]" % (name, parent.name)
+                return "{}[{}]".format(name, parent.name)
             elif isinstance(parent.parent.value, dict) and parent.parent.parent is not None:
                 # second param fixes root item registering as a dictionary
-                return "%s['%s']" % (name, parent.name)
+                return "{}['{}']".format(name, parent.name)
             else:
-                return "%s.%s" % (name, parent.name)
+                return "{}.{}".format(name, parent.name)
 
         else:
             return parent.name
 
-    def parent_item_is_container(self, name, parent):
+    def format_item_name_for_container_access(self, name, parent):
         if isinstance(parent.value, list) or isinstance(parent.value, tuple):
-            name = "[%s]" % name
+            name = "[{}]".format(name)
         elif isinstance(parent.value, dict):
-            name = "['%s']" % name
+            name = "['{}']".format(name)
         else:
-            name = ".%s" % name
+            name = ".{}".format(name)
 
         return name
 
