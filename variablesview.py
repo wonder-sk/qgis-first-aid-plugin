@@ -302,14 +302,9 @@ class VariablesView(QTreeView):
 
     def get_variable_parent_name(self, parent):
         if parent.parent is not None:
-            name = self.get_variable_parent_name(parent.parent)
-            if isinstance(parent.parent.value, list) or isinstance(parent.parent.value, tuple):
-                return "{}[{}]".format(name, parent.name)
-            elif isinstance(parent.parent.value, dict) and parent.parent.parent is not None:
-                # second param fixes root item registering as a dictionary
-                return "{}['{}']".format(name, parent.name)
-            else:
-                return "{}.{}".format(name, parent.name)
+            parent_name = self.get_variable_parent_name(parent.parent)
+            this_name = self.format_item_name_for_container_access(parent.name, parent.parent)
+            return "{}{}".format(parent_name, this_name)
 
         else:
             return parent.name
@@ -317,7 +312,7 @@ class VariablesView(QTreeView):
     def format_item_name_for_container_access(self, name, parent):
         if isinstance(parent.value, list) or isinstance(parent.value, tuple):
             name = "[{}]".format(name)
-        elif isinstance(parent.value, dict):
+        elif isinstance(parent.value, dict) and parent.parent is not None:
             name = "['{}']".format(name)
         else:
             name = ".{}".format(name)
