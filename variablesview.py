@@ -299,6 +299,9 @@ class VariablesView(QTreeView):
         else:
             self.object_picked.emit(name)
 
+    def on_item_right_click(self, index):
+        name = index.data(Role_Name)
+        parent = index.data(Role_Parent)
 
     def get_variable_parent_name(self, parent):
         if parent.parent is not None:
