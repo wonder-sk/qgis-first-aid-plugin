@@ -28,10 +28,11 @@ from qgis.PyQt.QtGui import (
     QPen
 )
 
-Role_Name = Qt.UserRole + 1
-Role_Type = Qt.UserRole + 2
-Role_Value = Qt.UserRole + 3
-Role_Parent = Qt.UserRole + 4
+
+Role_Name = Qt.UserRole+1
+Role_Type = Qt.UserRole+2
+Role_Value = Qt.UserRole+3
+Role_Parent = Qt.UserRole+4
 
 # database of handlers for custom classes to allow better introspection
 # key = class, value = method with two arguments: 1. value, 2. parent item
