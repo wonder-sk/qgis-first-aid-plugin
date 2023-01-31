@@ -13,10 +13,11 @@ from __future__ import absolute_import
 import code
 import os
 import traceback
+from traceback import FrameSummary
 import sys
 import json
 
-from qgis.core import QgsApplication
+from qgis.core import Qgis, QgsApplication
 from contextlib import contextmanager
 from future import standard_library
 standard_library.install_aliases()
@@ -316,6 +317,8 @@ class DebugWidget(QWidget):
 
         self.tb = tb
         self.entries = traceback.extract_tb(tb)
+        self.etype:Exception = etype # For use in copy traceback
+        self.evalue:str = value
 
         self.setWindowTitle('Python Error')
 
@@ -419,7 +422,7 @@ class DebugDialog(QDialog):
         self.clear_history_button.clicked.connect(self.clear_console_history)
 
 
-        self.save_output_button = QPushButton("Save Output")
+        self.save_output_button = QPushButton("Copy Details")
         self.save_output_button.clicked.connect(self.save_output)
 
         self.horz_layout.addWidget(self.clear_history_button)
@@ -436,12 +439,25 @@ class DebugDialog(QDialog):
         self.debug_widget.console.console.history = []
 
     def save_output(self):
-        filename = QFileDialog.getSaveFileName(self, "Save to", "", ".JSON (.json)")
+        dict = {}
+        dict["ExceptionDetails"] = {'Type': self.debug_widget.etype.__name__,'Message':str(self.debug_widget.evalue)}
+        dict["Environment"] = {'Qgis Version':Qgis.QGIS_VERSION, 'Operating System': QgsApplication.osName(),
+                               'Locale':QgsApplication.locale()}
+        dict["Trace"] = []
+        i = 0
+        tb:FrameSummary
+        for tb in self.debug_widget.console.entries:
+            entry = "{}[{}:{}]".format(tb.name, tb.filename.split("/")[-1], tb.lineno)
+            local_vars = frame_from_traceback(self.debug_widget.console.tb, i).f_locals
+            local_vars = {k:str(v) for k, v in local_vars.items()}
+            dict["Trace"].append({'Name':tb.name, 'Filename':tb.filename.split("/")[-1],
+                                  'LineNo': tb.lineno, 'Variables': local_vars})
+            i+=1
 
-        if filename:
-
-            print(filename)
-            print("saving output")
+        jsonStr = json.dumps(dict, indent=2)
+        cb = QApplication.clipboard()
+        cb.clear(mode=cb.Clipboard)
+        cb.setText(jsonStr, mode=cb.Clipboard)
 
     def reject(self):
         self.debug_widget.save_state()
