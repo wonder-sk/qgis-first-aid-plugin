@@ -14,6 +14,7 @@ import code
 import os
 import traceback
 import sys
+import json
 
 from qgis.core import QgsApplication
 from contextlib import contextmanager
@@ -28,7 +29,10 @@ from qgis.PyQt.QtWidgets import (
     QApplication,
     QLabel,
     QDialog,
-    QDialogButtonBox
+    QDialogButtonBox,
+    QPushButton,
+    QFileDialog,
+    QHBoxLayout
 )
 from qgis.PyQt.Qsci import QsciScintilla
 from qgis.PyQt.QtCore import (
@@ -406,13 +410,38 @@ class DebugDialog(QDialog):
         layout = QVBoxLayout()
         layout.addWidget(self.debug_widget, 1)
 
+        self.horz_layout = QHBoxLayout()
+
         self.button_box = QDialogButtonBox(QDialogButtonBox.Close)
         self.button_box.rejected.connect(self.reject)
-        layout.addWidget(self.button_box)
+
+        self.clear_history_button = QPushButton("Clear History")
+        self.clear_history_button.clicked.connect(self.clear_console_history)
+
+
+        self.save_output_button = QPushButton("Save Output")
+        self.save_output_button.clicked.connect(self.save_output)
+
+        self.horz_layout.addWidget(self.clear_history_button)
+        self.horz_layout.addWidget(self.save_output_button)
+        self.horz_layout.addWidget(self.button_box)
+
+        layout.addLayout(self.horz_layout)
 
         self.setLayout(layout)
 
         QgsGui.enableAutoGeometryRestore(self)
+
+    def clear_console_history(self):
+        self.debug_widget.console.console.history = []
+
+    def save_output(self):
+        filename = QFileDialog.getSaveFileName(self, "Save to", "", ".JSON (.json)")
+
+        if filename:
+
+            print(filename)
+            print("saving output")
 
     def reject(self):
         self.debug_widget.save_state()
