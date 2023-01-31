@@ -1,4 +1,3 @@
-from __future__ import print_function
 # simple script to test debugger
 
 

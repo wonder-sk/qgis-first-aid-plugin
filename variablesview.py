@@ -361,7 +361,7 @@ class VariablesView(QTreeView):
 
 
 if __name__ == '__main__':
-    class TestClass(object):
+    class TestClass:
         A1 = 123
 
         def __init__(self):

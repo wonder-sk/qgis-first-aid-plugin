@@ -1,7 +1,4 @@
-from __future__ import absolute_import
-
 import os
-from builtins import object
 
 import qgis.utils
 from qgis.PyQt.QtCore import QMetaObject, QObject, QSettings, QThread, Qt, pyqtSlot
@@ -71,7 +68,7 @@ def classFactory(iface):
     return FirstAidPlugin(iface)
 
 
-class FirstAidPlugin(object):
+class FirstAidPlugin:
     def __init__(self, iface):
         self.old_show_exception = None
         self.debugger_widget = None
