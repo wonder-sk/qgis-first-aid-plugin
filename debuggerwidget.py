@@ -178,7 +178,7 @@ class SourceWidget(QPlainTextEdit):
             file_content = f.read()
         self.setPlainText(file_content)
 
-        # this should use the default mono spaced font as set in the system
+        # this should use the default monospaced font as set in the system
         font = QFontDatabase.systemFont(QFontDatabase.FixedFont)
         self.setFont(font)
 
@@ -245,7 +245,7 @@ class SourceWidget(QPlainTextEdit):
             bottom = top + self.blockBoundingRect(block).height()
             blockNumber += 1
 
-    ### support for line numbers - finish
+    # support for line numbers - finish
 
     def toggle_breakpoint(self):
         line_no = self.textCursor().blockNumber()

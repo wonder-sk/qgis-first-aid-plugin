@@ -15,11 +15,7 @@ import traceback
 from traceback import FrameSummary
 import sys
 import json
-
-from qgis.core import Qgis, QgsApplication
 from contextlib import contextmanager
-from future import standard_library
-standard_library.install_aliases()
 
 from qgis.PyQt.QtWidgets import (
     QWidget,
@@ -31,7 +27,6 @@ from qgis.PyQt.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QPushButton,
-    QFileDialog,
     QHBoxLayout
 )
 from qgis.PyQt.Qsci import QsciScintilla
@@ -45,6 +40,10 @@ from qgis.PyQt.QtGui import (
     QFontMetrics
 )
 
+from qgis.core import (
+    Qgis,
+    QgsApplication
+)
 from qgis.gui import (
     QgsGui,
     QgsCodeEditorPython
@@ -81,8 +80,6 @@ class ConsoleInput(QgsCodeEditorPython, code.InteractiveInterpreter):
         super(QgsCodeEditorPython, self).__init__(parent)
         code.InteractiveInterpreter.__init__(self, locals=None)
 
-
-
         self.history = self.load_history()
         self.history_index = 0
 
@@ -98,7 +95,8 @@ class ConsoleInput(QgsCodeEditorPython, code.InteractiveInterpreter):
         self.setWrapMode(QsciScintilla.WrapCharacter)
         self.SendScintilla(QsciScintilla.SCI_EMPTYUNDOBUFFER)
 
-    def load_history(self):
+    @staticmethod
+    def load_history():
         history = []
         try:
             with open(os.path.join(QgsApplication.qgisSettingsDirPath(), "first_aid_history.txt")) as f:
@@ -164,7 +162,7 @@ class ConsoleInput(QgsCodeEditorPython, code.InteractiveInterpreter):
             self.history.append(cmd)
 
             # prevents commands with more lines to break the console
-            # in the case they have a eol different from '\n'
+            # in the case they have an eol different from '\n'
             self.setText('')
             self.move_cursor_to_end()
 
@@ -308,6 +306,7 @@ class ConsoleWidget(QWidget):
     def insert_text(self, text):
         self.console.insert_text(text)
 
+
 class DebugWidget(QWidget):
     def __init__(self, exc_info, parent=None):
         QWidget.__init__(self, parent)
@@ -316,8 +315,8 @@ class DebugWidget(QWidget):
 
         self.tb = tb
         self.entries = traceback.extract_tb(tb)
-        self.etype:Exception = etype # For use in copy traceback
-        self.evalue:str = value
+        self.etype: Exception = etype  # For use in copy traceback
+        self.evalue: str = value
 
         self.setWindowTitle('Python Error')
 
@@ -380,7 +379,7 @@ class DebugWidget(QWidget):
 
     def current_frame_changed(self, current, previous):
         row = current.row()
-        if row >= 0 and row < len(self.entries):
+        if 0 <= row < len(self.entries):
             self.go_to_frame(row)
 
     def go_to_frame(self, index):
@@ -400,6 +399,7 @@ class DebugWidget(QWidget):
         self.console.insert_text(name)
         self.console.setFocus()
 
+
 class DebugDialog(QDialog):
 
     def __init__(self, exc_info, parent=None):
@@ -417,11 +417,10 @@ class DebugDialog(QDialog):
         self.button_box = QDialogButtonBox(QDialogButtonBox.Close)
         self.button_box.rejected.connect(self.reject)
 
-        self.clear_history_button = QPushButton("Clear History")
+        self.clear_history_button = QPushButton(self.tr("Clear History"))
         self.clear_history_button.clicked.connect(self.clear_console_history)
 
-
-        self.save_output_button = QPushButton("Copy Details")
+        self.save_output_button = QPushButton(self.tr("Copy Details"))
         self.save_output_button.clicked.connect(self.save_output)
 
         self.horz_layout.addWidget(self.clear_history_button)
@@ -438,22 +437,29 @@ class DebugDialog(QDialog):
         self.debug_widget.console.console.history = []
 
     def save_output(self):
-        dict = {}
-        dict["ExceptionDetails"] = {'Type': self.debug_widget.etype.__name__,'Message':str(self.debug_widget.evalue)}
-        dict["Environment"] = {'Qgis Version':Qgis.QGIS_VERSION, 'Operating System': QgsApplication.osName(),
-                               'Locale':QgsApplication.locale()}
-        dict["Trace"] = []
-        tb:FrameSummary
+        report = {
+            "ExceptionDetails": {
+                'Type': self.debug_widget.etype.__name__,
+                'Message': str(self.debug_widget.evalue)
+            },
+            "Environment": {
+                'Qgis Version': Qgis.QGIS_VERSION,
+                'Operating System': QgsApplication.osName(),
+                'Locale': QgsApplication.locale()
+            },
+            "Trace": []
+        }
+        tb: FrameSummary
         for i, tb in enumerate(self.debug_widget.console.entries):
             local_vars = frame_from_traceback(self.debug_widget.console.tb, i).f_locals
-            local_vars = {k:str(v) for k, v in local_vars.items()}
-            dict["Trace"].append({'Name':tb.name, 'Filename':tb.filename.split("/")[-1],
-                                  'LineNo': tb.lineno, 'Variables': local_vars})
+            local_vars = {k: str(v) for k, v in local_vars.items()}
+            report["Trace"].append({'Name': tb.name, 'Filename': tb.filename.split("/")[-1],
+                                    'LineNo': tb.lineno, 'Variables': local_vars})
 
-        jsonStr = json.dumps(dict, indent=2)
+        json_report = json.dumps(dict, indent=2)
         cb = QApplication.clipboard()
         cb.clear(mode=cb.Clipboard)
-        cb.setText(jsonStr, mode=cb.Clipboard)
+        cb.setText(json_report, mode=cb.Clipboard)
 
     def reject(self):
         self.debug_widget.save_state()
@@ -463,7 +469,7 @@ class DebugDialog(QDialog):
 #####################################
 # test
 
-def err_here(a,b):
+def err_here(a, b):
     c = a+b
     c += d
 
@@ -471,7 +477,7 @@ def err_here(a,b):
 def call_err():
     a = 1
     b = 2
-    err_here(a,b)
+    err_here(a, b)
 
 
 if __name__ == '__main__':
@@ -484,4 +490,3 @@ if __name__ == '__main__':
         w = DebugWidget(sys.exc_info())
         w.show()
     a.exec_()
-

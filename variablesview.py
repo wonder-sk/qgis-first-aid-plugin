@@ -201,7 +201,7 @@ class VariablesDelegate(QStyledItemDelegate):
 
         # variable
         text_rect = text_rect.adjusted(used_rect.width(), 0, 0, 0)
-        used_rect = painter.drawText(text_rect, Qt.AlignLeft, index.data(Role_Value))
+        painter.drawText(text_rect, Qt.AlignLeft, index.data(Role_Value))
 
         painter.restore()
 
