@@ -12,9 +12,11 @@
 import code
 import os
 import traceback
+from traceback import FrameSummary
 import sys
+import json
 
-from qgis.core import QgsApplication
+from qgis.core import Qgis, QgsApplication
 from contextlib import contextmanager
 from future import standard_library
 standard_library.install_aliases()
@@ -27,7 +29,10 @@ from qgis.PyQt.QtWidgets import (
     QApplication,
     QLabel,
     QDialog,
-    QDialogButtonBox
+    QDialogButtonBox,
+    QPushButton,
+    QFileDialog,
+    QHBoxLayout
 )
 from qgis.PyQt.Qsci import QsciScintilla
 from qgis.PyQt.QtCore import (
@@ -311,6 +316,8 @@ class DebugWidget(QWidget):
 
         self.tb = tb
         self.entries = traceback.extract_tb(tb)
+        self.etype:Exception = etype # For use in copy traceback
+        self.evalue:str = value
 
         self.setWindowTitle('Python Error')
 
@@ -405,13 +412,48 @@ class DebugDialog(QDialog):
         layout = QVBoxLayout()
         layout.addWidget(self.debug_widget, 1)
 
+        self.horz_layout = QHBoxLayout()
+
         self.button_box = QDialogButtonBox(QDialogButtonBox.Close)
         self.button_box.rejected.connect(self.reject)
-        layout.addWidget(self.button_box)
+
+        self.clear_history_button = QPushButton("Clear History")
+        self.clear_history_button.clicked.connect(self.clear_console_history)
+
+
+        self.save_output_button = QPushButton("Copy Details")
+        self.save_output_button.clicked.connect(self.save_output)
+
+        self.horz_layout.addWidget(self.clear_history_button)
+        self.horz_layout.addWidget(self.save_output_button)
+        self.horz_layout.addWidget(self.button_box)
+
+        layout.addLayout(self.horz_layout)
 
         self.setLayout(layout)
 
         QgsGui.enableAutoGeometryRestore(self)
+
+    def clear_console_history(self):
+        self.debug_widget.console.console.history = []
+
+    def save_output(self):
+        dict = {}
+        dict["ExceptionDetails"] = {'Type': self.debug_widget.etype.__name__,'Message':str(self.debug_widget.evalue)}
+        dict["Environment"] = {'Qgis Version':Qgis.QGIS_VERSION, 'Operating System': QgsApplication.osName(),
+                               'Locale':QgsApplication.locale()}
+        dict["Trace"] = []
+        tb:FrameSummary
+        for i, tb in enumerate(self.debug_widget.console.entries):
+            local_vars = frame_from_traceback(self.debug_widget.console.tb, i).f_locals
+            local_vars = {k:str(v) for k, v in local_vars.items()}
+            dict["Trace"].append({'Name':tb.name, 'Filename':tb.filename.split("/")[-1],
+                                  'LineNo': tb.lineno, 'Variables': local_vars})
+
+        jsonStr = json.dumps(dict, indent=2)
+        cb = QApplication.clipboard()
+        cb.clear(mode=cb.Clipboard)
+        cb.setText(jsonStr, mode=cb.Clipboard)
 
     def reject(self):
         self.debug_widget.save_state()
