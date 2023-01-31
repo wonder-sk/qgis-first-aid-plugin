@@ -1,7 +1,7 @@
 [general]
 name=First Aid
 description=The must-have tool for Python plugin developers
-version=3.0.0
+version=3.0.1
 qgisMinimumVersion=3.0
 qgisMaximumVersion=3.99
 author=Martin Dobias, Zayne Tomlins
@@ -17,7 +17,8 @@ about=Provides Python debugger and replaces the default Python error handling in
   or even execute Python code within the context of the error.
 tags=debug
 
-changelog=<p>3.0.0 Added lots of helpful shortcuts:
+changelog=<p>3.0.1 Avoid deprecation warning on plugin start
+  <p>3.0.0 Added lots of helpful shortcuts:
   - right clicking on variables allows for copying their name, path and value
   - command history is persistent between sessions (with new 'clear history' button),
   - added button to copy a report containing stack trace details to the clipboard
