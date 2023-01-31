@@ -443,15 +443,12 @@ class DebugDialog(QDialog):
         dict["Environment"] = {'Qgis Version':Qgis.QGIS_VERSION, 'Operating System': QgsApplication.osName(),
                                'Locale':QgsApplication.locale()}
         dict["Trace"] = []
-        i = 0
         tb:FrameSummary
-        for tb in self.debug_widget.console.entries:
-            entry = "{}[{}:{}]".format(tb.name, tb.filename.split("/")[-1], tb.lineno)
+        for i, tb in enumerate(self.debug_widget.console.entries):
             local_vars = frame_from_traceback(self.debug_widget.console.tb, i).f_locals
             local_vars = {k:str(v) for k, v in local_vars.items()}
             dict["Trace"].append({'Name':tb.name, 'Filename':tb.filename.split("/")[-1],
                                   'LineNo': tb.lineno, 'Variables': local_vars})
-            i+=1
 
         jsonStr = json.dumps(dict, indent=2)
         cb = QApplication.clipboard()
