@@ -14,7 +14,6 @@
 # - handle stepping out of traced file (exit event loop)
 
 
-from __future__ import absolute_import
 import os
 import sys
 import traceback
@@ -175,7 +174,7 @@ class SourceWidget(QPlainTextEdit):
     def __init__(self, filename, parent=None):
         super().__init__(parent)
 
-        with open(filename, "r", encoding="utf-8") as f:
+        with open(filename, encoding="utf-8") as f:
             file_content = f.read()
         self.setPlainText(file_content)
 
@@ -384,7 +383,7 @@ class DebuggerWidget(QMainWindow):
             return  # already there...
         try:
             self.text_edits[filename] = SourceWidget(filename)
-        except IOError:
+        except OSError:
             # TODO: display warning we failed to read the file
             return
         tab_text = os.path.basename(filename)

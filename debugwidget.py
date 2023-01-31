@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # -----------------------------------------------------------
 #  Copyright (C) 2015 Martin Dobias
 # -----------------------------------------------------------
@@ -102,7 +101,7 @@ class ConsoleInput(QgsCodeEditorPython, code.InteractiveInterpreter):
     def load_history(self):
         history = []
         try:
-            with open(os.path.join(QgsApplication.qgisSettingsDirPath(), "first_aid_history.txt"), "r") as f:
+            with open(os.path.join(QgsApplication.qgisSettingsDirPath(), "first_aid_history.txt")) as f:
                 for command in f:
                     history.append(command.strip("\n"))
         except FileNotFoundError:
