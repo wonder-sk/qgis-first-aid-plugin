@@ -8,14 +8,15 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 # ---------------------------------------------------------------------
-
 from qgis.PyQt.QtWidgets import (
     QStyledItemDelegate,
     QStyleOptionViewItem,
     qApp,
     QStyle,
     QTreeView,
-    QApplication
+    QApplication,
+    QMenu,
+    QAction
 )
 
 from qgis.PyQt.QtCore import (
@@ -33,7 +34,6 @@ Role_Name = Qt.UserRole+1
 Role_Type = Qt.UserRole+2
 Role_Value = Qt.UserRole+3
 Role_Parent = Qt.UserRole+4
-
 
 # database of handlers for custom classes to allow better introspection
 # key = class, value = method with two arguments: 1. value, 2. parent item
@@ -166,7 +166,6 @@ class VariablesDelegate(QStyledItemDelegate):
         QStyledItemDelegate.__init__(self, parent)
 
     def paint(self, painter, option, index):
-
         opt = QStyleOptionViewItem(option)
         self.initStyleOption(opt, index)
 
@@ -277,7 +276,6 @@ class VariablesItemModel(QAbstractItemModel):
 
 
 class VariablesView(QTreeView):
-
     object_picked = pyqtSignal(str)
 
     def __init__(self, parent=None):
@@ -285,6 +283,8 @@ class VariablesView(QTreeView):
         self.setItemDelegate(VariablesDelegate(self))
         self.doubleClicked.connect(self.on_item_double_click)
         self.setExpandsOnDoubleClick(False)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._open_menu)
 
     def setVariables(self, variables):
         model = VariablesItemModel(DictTreeItem('', variables), self)
@@ -299,9 +299,46 @@ class VariablesView(QTreeView):
         else:
             self.object_picked.emit(name)
 
-    def on_item_right_click(self, index):
-        name = index.data(Role_Name)
-        parent = index.data(Role_Parent)
+    def _open_menu(self, position):
+
+        menu = QMenu()
+        var_val_action = QAction("Copy Variable Value", menu)
+        var_name_action = QAction("Copy Variable Name", menu)
+        var_tree_action = QAction("Copy Variable Tree", menu)
+
+        var_name_action.triggered.connect(self.copy_variable_name)
+        var_val_action.triggered.connect(self.copy_variable_value)
+        var_tree_action.triggered.connect(self.copy_variable_tree)
+
+        menu.addAction(var_name_action)
+        menu.addAction(var_val_action)
+        menu.addAction(var_tree_action)
+
+        menu.exec_(self.viewport().mapToGlobal(position))
+
+    def copy_variable_name(self):
+        indexes = self.selectedIndexes()
+        name = indexes[0].data(Role_Name)
+        cb = QApplication.clipboard()
+        cb.clear(mode=cb.Clipboard)
+        cb.setText(name, mode=cb.Clipboard)
+
+    def copy_variable_value(self):
+        indexes = self.selectedIndexes()
+        val = indexes[0].data(Role_Value)
+        cb = QApplication.clipboard()
+        cb.clear(mode=cb.Clipboard)
+        cb.setText(val, mode=cb.Clipboard)
+
+    def copy_variable_tree(self):
+        indexes = self.selectedIndexes()
+        val = indexes[0].data(Role_Name)
+        parent = indexes[0].data(Role_Parent)
+        if parent:
+            val = ("{}.{}".format(self.get_variable_parent_name(parent)[1:], val))
+        cb = QApplication.clipboard()
+        cb.clear(mode=cb.Clipboard)
+        cb.setText(val, mode=cb.Clipboard)
 
     def get_variable_parent_name(self, parent):
         if parent.parent is not None:
@@ -322,16 +359,18 @@ class VariablesView(QTreeView):
 
         return name
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     class TestClass(object):
         A1 = 123
 
         def __init__(self):
             self.x = 456
 
+
     def handle_TestClass(value, parent):
         make_item("handler test", 1234567890, parent)
+
 
     def long_string():
         return r"""
@@ -344,9 +383,11 @@ if __name__ == '__main__':
             ORDER BY
                 name"""
 
+
     custom_class_handlers[TestClass] = handle_TestClass
 
     import sys
+
     a = QApplication(sys.argv)
 
     tv = VariablesView()
