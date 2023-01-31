@@ -8,14 +8,15 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 # ---------------------------------------------------------------------
-from PyQt5.QtWidgets import QMenu, QAction, QListWidget
 from qgis.PyQt.QtWidgets import (
     QStyledItemDelegate,
     QStyleOptionViewItem,
     qApp,
     QStyle,
     QTreeView,
-    QApplication
+    QApplication,
+    QMenu,
+    QAction
 )
 
 from qgis.PyQt.QtCore import (
@@ -301,9 +302,9 @@ class VariablesView(QTreeView):
     def _open_menu(self, position):
 
         menu = QMenu()
-        var_val_action = QAction("Copy Variable Value", self)
-        var_name_action = QAction("Copy Variable Name", self)
-        var_tree_action = QAction("Copy Variable Tree", self)
+        var_val_action = QAction("Copy Variable Value", menu)
+        var_name_action = QAction("Copy Variable Name", menu)
+        var_tree_action = QAction("Copy Variable Tree", menu)
 
         var_name_action.triggered.connect(self.copy_variable_name)
         var_val_action.triggered.connect(self.copy_variable_value)
