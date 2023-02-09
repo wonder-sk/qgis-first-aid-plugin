@@ -323,6 +323,7 @@ class DebugWidget(QWidget):
 
         msg = str(value).replace("\n", "<br>").replace(" ", "&nbsp;")
         self.error = QLabel("<h1>"+etype.__name__+"</h1><b>"+msg+"</b>")
+        self.error.wordWrap(True)
         self.error.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
         self.frames = FramesView()
