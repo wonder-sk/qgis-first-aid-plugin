@@ -45,10 +45,6 @@ from qgis.PyQt.QtGui import (
     QIcon
 )
 
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-    from past.builtins import execfile
-
 from .variablesview import VariablesView
 from .framesview import FramesView
 from .highlighter import PythonHighlighter
@@ -445,7 +441,7 @@ class DebuggerWidget(QMainWindow):
             globals = __main__.__dict__
         if locals is None:
             locals = globals
-        execfile(self.tab_widget.currentWidget().filename, globals, locals)
+        exec(open(self.tab_widget.currentWidget().filename).read(), globals, locals)
 
     def current_text_edit(self):
         return self.tab_widget.currentWidget()
