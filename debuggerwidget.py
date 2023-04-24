@@ -441,7 +441,9 @@ class DebuggerWidget(QMainWindow):
             globals = __main__.__dict__
         if locals is None:
             locals = globals
-        exec(open(self.tab_widget.currentWidget().filename).read(), globals, locals)
+        with open(self.tab_widget.currentWidget().filename, 'r') as f:
+            code = f.read()
+            exec(code, globals, locals)
 
     def current_text_edit(self):
         return self.tab_widget.currentWidget()
