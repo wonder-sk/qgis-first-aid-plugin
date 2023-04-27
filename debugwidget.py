@@ -37,6 +37,8 @@ from qgis.PyQt.QtCore import (
     QCoreApplication
 )
 from qgis.PyQt.QtGui import (
+    QGuiApplication,
+    QIcon,
     QFontMetrics
 )
 
@@ -419,9 +421,11 @@ class DebugDialog(QDialog):
         self.button_box.rejected.connect(self.reject)
 
         self.clear_history_button = QPushButton(self.tr("Clear History"))
+        self.clear_history_button.setIcon(QIcon(":images/themes/default/console/iconClearConsole.svg"))
         self.clear_history_button.clicked.connect(self.clear_console_history)
 
         self.save_output_button = QPushButton(self.tr("Copy Details"))
+        self.save_output_button.setIcon(QIcon(":images/themes/default/mActionEditCopy.svg"))
         self.save_output_button.clicked.connect(self.save_output)
 
         self.horz_layout.addWidget(self.clear_history_button)
@@ -457,10 +461,9 @@ class DebugDialog(QDialog):
             report["Trace"].append({'Name': tb.name, 'Filename': tb.filename.split("/")[-1],
                                     'LineNo': tb.lineno, 'Variables': local_vars})
 
-        json_report = json.dumps(dict, indent=2)
-        cb = QApplication.clipboard()
-        cb.clear(mode=cb.Clipboard)
-        cb.setText(json_report, mode=cb.Clipboard)
+        json_report = json.dumps(report, indent=2)
+        cb = QGuiApplication.clipboard()
+        cb.setText(json_report)
 
     def reject(self):
         self.debug_widget.save_state()
