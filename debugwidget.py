@@ -94,7 +94,7 @@ class ConsoleInput(QgsCodeEditorPython, code.InteractiveInterpreter):
         # here: http://www.scintilla.org/ScintillaDoc.html)
         self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
 
-        self.setWrapMode(QsciScintilla.WrapCharacter)
+        self.setWrapMode(QsciScintilla.WrapMode.WrapCharacter)
         self.SendScintilla(QsciScintilla.SCI_EMPTYUNDOBUFFER)
 
     @staticmethod
@@ -124,7 +124,7 @@ class ConsoleInput(QgsCodeEditorPython, code.InteractiveInterpreter):
         except ImportError:
             QgsCodeEditorColorScheme = None
 
-        self.setEdgeMode(QsciScintilla.EdgeNone)
+        self.setEdgeMode(QsciScintilla.EdgeMode.EdgeNone)
 
     def _setMinimumHeight(self):
         font = self.lexer().defaultFont(0)
@@ -143,11 +143,11 @@ class ConsoleInput(QgsCodeEditorPython, code.InteractiveInterpreter):
         self._setMinimumHeight()
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Up:
+        if event.key() == Qt.Key.Key_Up:
             self.history_index = max(self.history_index - 1, -len(self.history))
             self.setText(self.history[self.history_index])
             self.displayPrompt()
-        elif event.key() == Qt.Key_Down:
+        elif event.key() == Qt.Key.Key_Down:
             if self.history_index == 0:
                 return
             elif self.history_index == -1:
@@ -157,7 +157,7 @@ class ConsoleInput(QgsCodeEditorPython, code.InteractiveInterpreter):
                 self.history_index += 1
                 self.setText(self.history[self.history_index])
             self.displayPrompt()
-        elif event.key() == Qt.Key_Return:
+        elif event.key() == Qt.Key.Key_Return:
             self.history_index = 0
 
             cmd = self.text()
@@ -199,13 +199,13 @@ class ShellOutputScintilla(QgsCodeEditorPython):
 
         self.setMinimumHeight(120)
 
-        self.setWrapMode(QsciScintilla.WrapCharacter)
+        self.setWrapMode(QsciScintilla.WrapMode.WrapCharacter)
         self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
 
     def initializeLexer(self):
         super().initializeLexer()
         self.setFoldingVisible(False)
-        self.setEdgeMode(QsciScintilla.EdgeNone)
+        self.setEdgeMode(QsciScintilla.EdgeMode.EdgeNone)
 
     def refreshSettingsOutput(self):
         # Set Python lexer
@@ -325,7 +325,7 @@ class DebugWidget(QWidget):
         msg = str(value).replace("\n", "<br>").replace(" ", "&nbsp;")
         self.error = QLabel("<h1>"+etype.__name__+"</h1><b>"+msg+"</b>")
         self.error.setWordWrap(True)
-        self.error.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self.error.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
 
         self.frames = FramesView()
         self.frames.setTraceback(tb)
@@ -333,7 +333,7 @@ class DebugWidget(QWidget):
 
         self.source = SourceView()
 
-        self.splitterSrc = QSplitter(Qt.Horizontal)
+        self.splitterSrc = QSplitter(Qt.Orientation.Horizontal)
         self.splitterSrc.addWidget(self.frames)
         self.splitterSrc.addWidget(self.source)
         self.splitterSrc.setStretchFactor(0, 1)
@@ -347,7 +347,7 @@ class DebugWidget(QWidget):
 
         self.console = ConsoleWidget(exc_info)
 
-        self.splitterMain = QSplitter(Qt.Vertical)
+        self.splitterMain = QSplitter(Qt.Orientation.Vertical)
         self.splitterMain.addWidget(self.splitterSrc)
 
         self.splitterMain.addWidget(self.variables)
@@ -417,7 +417,7 @@ class DebugDialog(QDialog):
 
         self.horz_layout = QHBoxLayout()
 
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Close)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
         self.button_box.rejected.connect(self.reject)
 
         self.clear_history_button = QPushButton(self.tr("Clear History"))

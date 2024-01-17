@@ -175,13 +175,13 @@ class SourceWidget(QPlainTextEdit):
         self.setPlainText(file_content)
 
         # this should use the default monospaced font as set in the system
-        font = QFontDatabase.systemFont(QFontDatabase.FixedFont)
+        font = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
         self.setFont(font)
 
-        self.setLineWrapMode(QPlainTextEdit.NoWrap)
+        self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
 
         self.setReadOnly(True)
-        self.setTextInteractionFlags(self.textInteractionFlags() | Qt.TextSelectableByKeyboard)
+        self.setTextInteractionFlags(self.textInteractionFlags() | Qt.TextInteractionFlag.TextSelectableByKeyboard)
 
         self.highlighter = PythonHighlighter(self.document())
 
@@ -224,8 +224,8 @@ class SourceWidget(QPlainTextEdit):
 
     def lineNumberAreaPaintEvent(self, event):
         painter = QPainter(self.lineNumberArea)
-        painter.fillRect(event.rect(), Qt.white)
-        painter.fillRect(QRect(event.rect().right() - 1, event.rect().top(), 1, event.rect().height()), Qt.lightGray)
+        painter.fillRect(event.rect(), Qt.GlobalColor.white)
+        painter.fillRect(QRect(event.rect().right() - 1, event.rect().top(), 1, event.rect().height()), Qt.GlobalColor.lightGray)
         block = self.firstVisibleBlock()
         blockNumber = block.blockNumber()
         top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
@@ -233,9 +233,9 @@ class SourceWidget(QPlainTextEdit):
 
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
-                painter.setPen(Qt.black)
+                painter.setPen(Qt.GlobalColor.black)
                 painter.drawText(0, int(top), self.lineNumberArea.width() - self.fontMetrics().width('9'),
-                                 self.fontMetrics().height(), Qt.AlignRight, str(blockNumber + 1))
+                                 self.fontMetrics().height(), Qt.AlignmentFlag.AlignRight, str(blockNumber + 1))
             block = block.next()
             top = bottom
             bottom = top + self.blockBoundingRect(block).height()
@@ -257,7 +257,7 @@ class SourceWidget(QPlainTextEdit):
             block = self.document().findBlockByLineNumber(line_no)
             highlight = QTextEdit.ExtraSelection()
             highlight.cursor = QTextCursor(block)
-            highlight.format.setProperty(QTextFormat.FullWidthSelection, True)
+            highlight.format.setProperty(QTextFormat.Property.FullWidthSelection, True)
             highlight.format.setBackground(color)
             return highlight
 
@@ -322,12 +322,12 @@ class DebuggerWidget(QMainWindow):
         self.dock_frames = QDockWidget("Frames", self)
         self.dock_frames.setObjectName("DockFrames")
         self.dock_frames.setWidget(self.frames_view)
-        self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_frames)
+        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.dock_frames)
 
         self.dock_vars = QDockWidget("Variables", self)
         self.dock_vars.setObjectName("DockVariables")
         self.dock_vars.setWidget(self.vars_view)
-        self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_vars)
+        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.dock_vars)
 
         self.resize(800, 800)
 

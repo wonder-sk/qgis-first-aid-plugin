@@ -38,15 +38,15 @@ class FramesModel(QAbstractListModel):
         if not index.isValid():
             return
 
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             entry = self.entries[index.row()]
             return "%s [%s:%d]" % (entry[2], os.path.basename(entry[0]), entry[1])
-        elif role == Qt.ToolTipRole:
+        elif role == Qt.ItemDataRole.ToolTipRole:
             entry = self.entries[index.row()]
             return "<b>Method:</b> %s\n<br>\n<b>Line:</b> %d\n<br><br>\n<b>Path:</b><br>\n%s" % (entry[2], entry[1], entry[0])
 
     def headerData(self, section, orientation, role):
-        if section == 0 and orientation == Qt.Horizontal and role == Qt.DisplayRole:
+        if section == 0 and orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return "Traceback (most recent call last)"  # "Frames"
 
 

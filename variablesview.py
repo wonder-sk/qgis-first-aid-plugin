@@ -30,10 +30,10 @@ from qgis.PyQt.QtGui import (
 )
 
 
-Role_Name = Qt.UserRole+1
-Role_Type = Qt.UserRole+2
-Role_Value = Qt.UserRole+3
-Role_Parent = Qt.UserRole+4
+Role_Name = Qt.ItemDataRole.UserRole+1
+Role_Type = Qt.ItemDataRole.UserRole+2
+Role_Value = Qt.ItemDataRole.UserRole+3
+Role_Parent = Qt.ItemDataRole.UserRole+4
 
 # database of handlers for custom classes to allow better introspection
 # key = class, value = method with two arguments: 1. value, 2. parent item
@@ -177,31 +177,31 @@ class VariablesDelegate(QStyledItemDelegate):
         painter.setClipRect(opt.rect)
 
         # background
-        style.drawPrimitive(QStyle.PE_PanelItemViewItem, opt, painter, None)
+        style.drawPrimitive(QStyle.PrimitiveElement.PE_PanelItemViewItem, opt, painter, None)
 
-        text_margin = style.pixelMetric(QStyle.PM_FocusFrameHMargin, None, None) + 1
+        text_margin = style.pixelMetric(QStyle.PixelMetric.PM_FocusFrameHMargin, None, None) + 1
         text_rect = opt.rect.adjusted(text_margin, 0, -text_margin, 0)  # remove width padding
 
         # variable name
         painter.save()
-        painter.setPen(QPen(Qt.red))
-        used_rect = painter.drawText(text_rect, Qt.AlignLeft, index.data(Role_Name))
+        painter.setPen(QPen(Qt.GlobalColor.red))
+        used_rect = painter.drawText(text_rect, Qt.AlignmentFlag.AlignLeft, index.data(Role_Name))
         painter.restore()
 
         # equals sign
         text_rect = text_rect.adjusted(used_rect.width(), 0, 0, 0)
-        used_rect = painter.drawText(text_rect, Qt.AlignLeft, " = ")
+        used_rect = painter.drawText(text_rect, Qt.AlignmentFlag.AlignLeft, " = ")
 
         # variable type
         text_rect = text_rect.adjusted(used_rect.width(), 0, 0, 0)
         painter.save()
-        painter.setPen(QPen(Qt.gray))
-        used_rect = painter.drawText(text_rect, Qt.AlignLeft, "{%s} " % index.data(Role_Type))
+        painter.setPen(QPen(Qt.GlobalColor.gray))
+        used_rect = painter.drawText(text_rect, Qt.AlignmentFlag.AlignLeft, "{%s} " % index.data(Role_Type))
         painter.restore()
 
         # variable
         text_rect = text_rect.adjusted(used_rect.width(), 0, 0, 0)
-        painter.drawText(text_rect, Qt.AlignLeft, index.data(Role_Value))
+        painter.drawText(text_rect, Qt.AlignmentFlag.AlignLeft, index.data(Role_Value))
 
         painter.restore()
 
@@ -233,7 +233,7 @@ class VariablesItemModel(QAbstractItemModel):
             return
 
         item = index.internalPointer()
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             return item.text()
         elif role == Role_Name:
             return item.name
@@ -249,7 +249,7 @@ class VariablesItemModel(QAbstractItemModel):
     def flags(self, index):
         if not index.isValid():
             return 0
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
 
     def index(self, row, column, parent):
         if not self.hasIndex(row, column, parent):
@@ -271,7 +271,7 @@ class VariablesItemModel(QAbstractItemModel):
         return self.createIndex(parent_index_in_grandparent, 0, parent_item)
 
     def headerData(self, section, orientation, role):
-        if section == 0 and orientation == Qt.Horizontal and role == Qt.DisplayRole:
+        if section == 0 and orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return "Variables"
 
 
@@ -283,7 +283,7 @@ class VariablesView(QTreeView):
         self.setItemDelegate(VariablesDelegate(self))
         self.doubleClicked.connect(self.on_item_double_click)
         self.setExpandsOnDoubleClick(False)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._open_menu)
 
     def setVariables(self, variables):

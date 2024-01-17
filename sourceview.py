@@ -46,7 +46,7 @@ class SourceView(QgsCodeEditorPython):
         self.setCursorPosition(line_number-1, 0)
         # prevent issues with initially invisible cursor / caret line
         self.setFocus()
-        self.standardCommands().find(QsciCommand.VerticalCentreCaret).execute()
+        self.standardCommands().find(QsciCommand.Command.VerticalCentreCaret).execute()
 
     # def resizeEvent(self, event):
         # QsciScintilla.resizeEvent(self, event)
@@ -56,7 +56,7 @@ class SourceView(QgsCodeEditorPython):
         QsciScintilla.showEvent(self, event)
         # self.jumpToLine(0)
         # prevent issues with incorrect initial scroll position
-        self.standardCommands().find(QsciCommand.VerticalCentreCaret).execute()
+        self.standardCommands().find(QsciCommand.Command.VerticalCentreCaret).execute()
 
 
 if __name__ == "__main__":

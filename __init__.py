@@ -34,7 +34,7 @@ def show_debug_widget(debug_widget_data):
 
     dw = DebugDialog(debug_widget_data)
     dw.show()
-    dw.setAttribute(Qt.WA_DeleteOnClose)
+    dw.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
     #  yes, all the below are required. silly qt!
     dw.raise_()
@@ -64,7 +64,7 @@ def showException(etype, value, tb, msg, *args, **kwargs): #pylint: disable=unus
         # we need to pass the exception details to main thread - we can't do GUI stuff here
         deferred_dw_handler.debug_widget_data = (etype, value, tb)
         QMetaObject.invokeMethod(
-            deferred_dw_handler, "start_deferred", Qt.QueuedConnection
+            deferred_dw_handler, "start_deferred", Qt.ConnectionType.QueuedConnection
         )
 
 
