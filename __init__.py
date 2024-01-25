@@ -4,7 +4,7 @@ import qgis.utils #pylint: disable=import-error
 from qgis.PyQt import sip #pylint: disable=import-error
 from qgis.PyQt.QtCore import QMetaObject, QObject, QThread, Qt, pyqtSlot #pylint: disable=import-error
 from qgis.PyQt.QtGui import * #pylint: disable=import-error
-from qgis.PyQt.QtWidgets import QAction, qApp #pylint: disable=import-error
+from qgis.PyQt.QtWidgets import QAction, QApplication #pylint: disable=import-error
 
 from .debuggerwidget import DebuggerWidget
 from .debugwidget import DebugDialog
@@ -57,7 +57,7 @@ class DeferredExceptionObject(QObject):#pylint: disable=too-few-public-methods
 
 
 def showException(etype, value, tb, msg, *args, **kwargs): #pylint: disable=unused-argument disable=invalid-name
-    if QThread.currentThread() == qApp.thread():
+    if QThread.currentThread() == QApplication.instance().thread():
         # we can show the exception directly
         show_debug_widget((etype, value, tb))
     else:

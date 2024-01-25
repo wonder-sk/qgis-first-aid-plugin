@@ -11,7 +11,6 @@
 from qgis.PyQt.QtWidgets import (
     QStyledItemDelegate,
     QStyleOptionViewItem,
-    qApp,
     QStyle,
     QTreeView,
     QApplication,
@@ -172,7 +171,7 @@ class VariablesDelegate(QStyledItemDelegate):
         # original command that would draw the whole thing with default style
         # style.drawControl(QStyle.CE_ItemViewItem, opt, painter)
 
-        style = qApp.style()
+        style = QApplication.instance().style()
         painter.save()
         painter.setClipRect(opt.rect)
 
