@@ -4,6 +4,7 @@ description=The must-have tool for Python plugin developers
 version=3.0.3
 qgisMinimumVersion=3.0
 qgisMaximumVersion=3.99
+supportsQt6=yes
 author=Martin Dobias, Zayne Tomlins
 email=wonder.sk@gmail.com
 icon=icon.png
