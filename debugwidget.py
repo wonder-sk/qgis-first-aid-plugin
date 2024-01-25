@@ -493,4 +493,4 @@ if __name__ == '__main__':
     except Exception as e:
         w = DebugWidget(sys.exc_info())
         w.show()
-    a.exec_()
+    a.exec()

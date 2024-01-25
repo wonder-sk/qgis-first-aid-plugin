@@ -65,4 +65,4 @@ if __name__ == "__main__":
     editor.openFile(sys.argv[0])
     editor.jumpToLine(35)
     editor.show()
-    app.exec_()
+    app.exec()

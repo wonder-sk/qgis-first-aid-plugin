@@ -314,7 +314,7 @@ class VariablesView(QTreeView):
         menu.addAction(var_val_action)
         menu.addAction(var_tree_action)
 
-        menu.exec_(self.viewport().mapToGlobal(position))
+        menu.exec(self.viewport().mapToGlobal(position))
 
     def copy_variable_name(self):
         indexes = self.selectedIndexes()
@@ -394,4 +394,4 @@ if __name__ == '__main__':
     tv.setVariables({'a': 1, 'ax': [5, 6, 7], 'b': {'c': 3, 'd': 4}, 'tv': tv, 'e': TestClass(), 'ls': long_string()})
     tv.show()
 
-    a.exec_()
+    a.exec()

@@ -140,7 +140,7 @@ class Debugger:
                 self.main_widget.update_buttons()
                 self.main_widget.raise_()
                 self.main_widget.activateWindow()
-                self.ev_loop.exec_()  # this will halt execution here for some time
+                self.ev_loop.exec()  # this will halt execution here for some time
                 self.stopped = False
                 self.main_widget.update_buttons()
 
@@ -496,4 +496,4 @@ if __name__ == '__main__':
     w = DebuggerWidget()
     w.load_file('test_script.py')
     w.show()
-    a.exec_()
+    a.exec()
