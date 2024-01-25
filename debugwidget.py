@@ -116,7 +116,7 @@ class ConsoleInput(QgsCodeEditorPython, code.InteractiveInterpreter):
         # Margin 1 is used for the '>>>' prompt (console input)
         self.setMarginLineNumbers(1, True)
         self.setMarginWidth(1, "00000")
-        self.setMarginType(1, 5)  # TextMarginRightJustified=5
+        self.setMarginType(1, QsciScintilla.MarginType.TextMarginRightJustified)
 
         try:
             from qgis.gui import QgsCodeEditorColorScheme
