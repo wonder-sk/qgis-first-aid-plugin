@@ -39,8 +39,8 @@ class SourceView(QgsCodeEditorPython):
         self.SendScintilla(QsciScintilla.SCI_SETREADONLY, True)
 
     def openFile(self, filename):
-
-        self.setText(open(filename).read())
+        with open(filename) as file:
+            self.setText(file.read())
 
     def jumpToLine(self, line_number):
         self.setCursorPosition(line_number-1, 0)
