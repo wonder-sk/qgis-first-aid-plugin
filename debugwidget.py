@@ -388,10 +388,9 @@ class DebugWidget(QWidget):
     def go_to_frame(self, index):
 
         filename = self.entries[index][0]
-        lineno = self.entries[index][1]
+        self.source.line = self.entries[index][1]
 
         self.source.openFile(filename)
-        self.source.jumpToLine(lineno)
 
         local_vars = frame_from_traceback(self.tb, index).f_locals
         self.variables.setVariables(local_vars)
