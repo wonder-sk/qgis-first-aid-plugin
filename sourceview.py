@@ -54,6 +54,7 @@ class SourceView(QgsCodeEditorPython):
 
     def showEvent(self, event):
         QsciScintilla.showEvent(self, event)
+        self.setFocus()
         # self.jumpToLine(0)
         # prevent issues with incorrect initial scroll position
         self.standardCommands().find(QsciCommand.Command.VerticalCentreCaret).execute()
