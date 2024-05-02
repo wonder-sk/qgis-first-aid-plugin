@@ -34,7 +34,6 @@ class SourceView(QgsCodeEditorPython):
 
     def __init__(self, parent=None):
         QgsCodeEditorPython.__init__(self, parent)
-        self.line: int = 0
 
         # make the source read-only
         self.SendScintilla(QsciScintilla.SCI_SETREADONLY, True)
