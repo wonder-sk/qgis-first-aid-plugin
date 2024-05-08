@@ -3,7 +3,7 @@ import os
 import qgis.utils  # pylint: disable=import-error
 from qgis.PyQt import sip  # pylint: disable=import-error
 from qgis.PyQt.QtCore import QMetaObject, QObject, QThread, Qt, pyqtSlot  # pylint: disable=import-error
-from qgis.PyQt.QtGui import *  # pylint: disable=import-error
+from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QApplication  # pylint: disable=import-error
 
 from .debuggerwidget import DebuggerWidget
