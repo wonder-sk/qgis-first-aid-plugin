@@ -237,11 +237,11 @@ class ConsoleWidget(QWidget):
 
         self.frame_vars = [None] * len(self.entries)
 
-        l = QVBoxLayout()
-        l.addWidget(self.console_out)
-        l.addWidget(self.console)
-        l.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(l)
+        layout = QVBoxLayout()
+        layout.addWidget(self.console_out)
+        layout.addWidget(self.console)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
 
         self.setFocusProxy(self.console)
 
@@ -281,7 +281,7 @@ class ConsoleWidget(QWidget):
         try:
             with stdout_redirected(io):
                 exec(c, frame_vars[0], frame_vars[1])
-        except:
+        except:  # noqa: E722
             etype, value, tb = sys.exc_info()
             QMessageBox.critical(self, "Error", etype.__name__ + "\n" + str(value))
             return
@@ -349,11 +349,11 @@ class DebugWidget(QWidget):
         self.splitterMain.setCollapsible(1, False)
         self.splitterMain.setCollapsible(2, False)
 
-        l = QVBoxLayout()
-        l.addWidget(self.error)
-        l.addWidget(self.splitterMain)
-        l.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(l)
+        layout = QVBoxLayout()
+        layout.addWidget(self.error)
+        layout.addWidget(self.splitterMain)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
 
         self.resize(800, 600)
 
@@ -480,7 +480,7 @@ class DebugDialog(QDialog):
 
 def err_here(a, b):
     c = a + b
-    c += d
+    c += d  # noqa: F821
 
 
 def call_err():
@@ -495,7 +495,7 @@ if __name__ == "__main__":
     QCoreApplication.setApplicationName("Test App")
     try:
         call_err()
-    except Exception as e:
+    except Exception:
         w = DebugWidget(sys.exc_info())
         w.show()
     a.exec()

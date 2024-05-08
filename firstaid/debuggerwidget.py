@@ -317,9 +317,8 @@ class DebuggerWidget(QMainWindow):
 
         self.setCentralWidget(self.tab_widget)
 
-        _icon = lambda x: QIcon(
-            os.path.join(os.path.dirname(__file__), "icons", x + ".svg")
-        )
+        def _icon(x):
+            return QIcon(os.path.join(os.path.dirname(__file__), "icons", x + ".svg"))
 
         self.action_load = self.toolbar.addAction(
             _icon("folder-outline"), "Load Python file (Ctrl+O)", self.on_load
