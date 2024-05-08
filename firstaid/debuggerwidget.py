@@ -17,7 +17,6 @@
 import os
 import sys
 import traceback
-import warnings
 
 from qgis.PyQt.QtCore import (
     QEventLoop,
@@ -203,7 +202,7 @@ class SourceWidget(QPlainTextEdit):
         while max_digit >= 10:
             max_digit /= 10
             digits += 1
-        return self.fontMetrics().width('9') * (digits + 2)
+        return self.fontMetrics().horizontalAdvance('9') * (digits + 2)
 
     def updateLineNumberAreaWidth(self, newBlockCount):
         self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
@@ -234,7 +233,7 @@ class SourceWidget(QPlainTextEdit):
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 painter.setPen(Qt.GlobalColor.black)
-                painter.drawText(0, int(top), self.lineNumberArea.width() - self.fontMetrics().width('9'),
+                painter.drawText(0, int(top), self.lineNumberArea.width() - self.fontMetrics().horizontalAdvance('9'),
                                  self.fontMetrics().height(), Qt.AlignmentFlag.AlignRight, str(blockNumber + 1))
             block = block.next()
             top = bottom
