@@ -1,10 +1,10 @@
 import os
 
-import qgis.utils #pylint: disable=import-error
-from qgis.PyQt import sip #pylint: disable=import-error
-from qgis.PyQt.QtCore import QMetaObject, QObject, QThread, Qt, pyqtSlot #pylint: disable=import-error
-from qgis.PyQt.QtGui import * #pylint: disable=import-error
-from qgis.PyQt.QtWidgets import QAction, QApplication #pylint: disable=import-error
+import qgis.utils  # pylint: disable=import-error
+from qgis.PyQt import sip  # pylint: disable=import-error
+from qgis.PyQt.QtCore import QMetaObject, QObject, QThread, Qt, pyqtSlot  # pylint: disable=import-error
+from qgis.PyQt.QtGui import *  # pylint: disable=import-error
+from qgis.PyQt.QtWidgets import QAction, QApplication  # pylint: disable=import-error
 
 from .debuggerwidget import DebuggerWidget
 from .debugwidget import DebugDialog
@@ -20,14 +20,14 @@ from .debugwidget import DebugDialog
 # (at your option) any later version.
 # ---------------------------------------------------------------------
 
-dw = None #pylint: disable=invalid-name
-deferred_dw_handler = None #pylint: disable=invalid-name
+dw = None  # pylint: disable=invalid-name
+deferred_dw_handler = None  # pylint: disable=invalid-name
 
 
 def show_debug_widget(debug_widget_data):
     """Opens exception dialog with data from debug_widget_data - should be tuple (etype, value, tb).
-     Must be called from main thread."""
-    global dw #pylint: disable=global-statement disable=invalid-name
+    Must be called from main thread."""
+    global dw  # pylint: disable=global-statement disable=invalid-name
     if dw is not None and not sip.isdeleted(dw):
         if dw.isVisible():
             return  # pass this exception while previous is being inspected
@@ -42,9 +42,9 @@ def show_debug_widget(debug_widget_data):
     dw.setFocus()
 
 
-class DeferredExceptionObject(QObject):#pylint: disable=too-few-public-methods
+class DeferredExceptionObject(QObject):  # pylint: disable=too-few-public-methods
     """Helper object that allows display of exceptions from worker threads:
-        running of start_deferred() is requested from worker thread."""
+    running of start_deferred() is requested from worker thread."""
 
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
@@ -56,7 +56,7 @@ class DeferredExceptionObject(QObject):#pylint: disable=too-few-public-methods
         show_debug_widget(self.debug_widget_data)
 
 
-def showException(etype, value, tb, msg, *args, **kwargs): #pylint: disable=unused-argument disable=invalid-name
+def showException(etype, value, tb, msg, *args, **kwargs):  # pylint: disable=unused-argument disable=invalid-name
     if QThread.currentThread() == QApplication.instance().thread():
         # we can show the exception directly
         show_debug_widget((etype, value, tb))
@@ -73,11 +73,11 @@ def classFactory(iface):  # pylint: disable=invalid-name
 
 
 class FirstAidPlugin:
-    def __init__(self, iface): #pylint: disable=unused-argument
+    def __init__(self, iface):  # pylint: disable=unused-argument
         self.old_show_exception = None
         self.debugger_widget = None
 
-    def initGui(self):#pylint: disable=invalid-name
+    def initGui(self):  # pylint: disable=invalid-name
         # ReportPlugin also hooks exceptions and needs to be unloaded if active
         # so qgis.utils.showException is the QGIS native one
         report_plugin = "report"
@@ -89,10 +89,10 @@ class FirstAidPlugin:
         self.old_show_exception = qgis.utils.showException
         qgis.utils.showException = showException
 
-        global deferred_dw_handler #pylint: disable=global-statement disable=invalid-name
+        global deferred_dw_handler  # pylint: disable=global-statement disable=invalid-name
         deferred_dw_handler = DeferredExceptionObject(qgis.utils.iface.mainWindow())
 
-        icon = QIcon(os.path.join(os.path.dirname(__file__), "icons", "bug.svg"))#pylint: disable=undefined-variable
+        icon = QIcon(os.path.join(os.path.dirname(__file__), "icons", "bug.svg"))  # pylint: disable=undefined-variable
         self.action_debugger = QAction(
             icon, "Debug (Ctrl + F12)", qgis.utils.iface.mainWindow()
         )
@@ -106,14 +106,13 @@ class FirstAidPlugin:
             qgis.utils.startPlugin(report_plugin)
 
     def unload(self):
-
         qgis.utils.iface.removeToolBarIcon(self.action_debugger)
         del self.action_debugger
 
         # unhook from exception handling
         qgis.utils.showException = self.old_show_exception
 
-        global dw #pylint: disable=global-statement disable=invalid-name
+        global dw  # pylint: disable=global-statement disable=invalid-name
         if dw is not None and not sip.isdeleted(dw):
             dw.close()
             dw.deleteLater()

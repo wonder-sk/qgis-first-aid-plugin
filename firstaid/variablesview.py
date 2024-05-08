@@ -15,24 +15,17 @@ from qgis.PyQt.QtWidgets import (
     QTreeView,
     QApplication,
     QMenu,
-    QAction
+    QAction,
 )
 
-from qgis.PyQt.QtCore import (
-    Qt,
-    QAbstractItemModel,
-    QModelIndex,
-    pyqtSignal
-)
-from qgis.PyQt.QtGui import (
-    QPen
-)
+from qgis.PyQt.QtCore import Qt, QAbstractItemModel, QModelIndex, pyqtSignal
+from qgis.PyQt.QtGui import QPen
 
 
-Role_Name = Qt.ItemDataRole.UserRole+1
-Role_Type = Qt.ItemDataRole.UserRole+2
-Role_Value = Qt.ItemDataRole.UserRole+3
-Role_Parent = Qt.ItemDataRole.UserRole+4
+Role_Name = Qt.ItemDataRole.UserRole + 1
+Role_Type = Qt.ItemDataRole.UserRole + 2
+Role_Value = Qt.ItemDataRole.UserRole + 3
+Role_Parent = Qt.ItemDataRole.UserRole + 4
 
 # database of handlers for custom classes to allow better introspection
 # key = class, value = method with two arguments: 1. value, 2. parent item
@@ -41,7 +34,6 @@ custom_class_handlers = {}
 
 
 class VariablesTreeItem:
-
     def __init__(self, name, value, parent=None):
         self.name = name
         self.value = value
@@ -73,7 +65,7 @@ class DictTreeItem(VariablesTreeItem):
         self.has_children = len(value) > 0
 
         if parent is not None:
-            ScalarTreeItem('__len__', len(value), self)
+            ScalarTreeItem("__len__", len(value), self)
 
     def populate_children(self):
         self.populated_children = True
@@ -94,7 +86,7 @@ class ListTreeItem(VariablesTreeItem):
 
         self.has_children = len(value) > 0
 
-        ScalarTreeItem('__len__', len(value), self)
+        ScalarTreeItem("__len__", len(value), self)
 
     def populate_children(self):
         self.populated_children = True
@@ -107,7 +99,10 @@ class ObjectTreeItem(VariablesTreeItem):
         VariablesTreeItem.__init__(self, name, value, parent)
 
         self.custom_handler = None
-        if hasattr(self.value, '__class__') and self.value.__class__ in custom_class_handlers:
+        if (
+            hasattr(self.value, "__class__")
+            and self.value.__class__ in custom_class_handlers
+        ):
             self.custom_handler = custom_class_handlers[self.value.__class__]
 
         self.has_children = len(value.__dict__) > 0 or self.custom_handler is not None
@@ -128,7 +123,7 @@ class ScalarTreeItem(VariablesTreeItem):
 
 class StringTreeItem(VariablesTreeItem):
     def _is_internal(self):
-        return len(self.value.split('\n')) > 0 and self.name == '__str__'
+        return len(self.value.split("\n")) > 0 and self.name == "__str__"
 
     def __init__(self, name, value, parent):
         VariablesTreeItem.__init__(self, name, value, parent)
@@ -142,11 +137,11 @@ class StringTreeItem(VariablesTreeItem):
 
     def populate_children(self):
         self.populated_children = True
-        make_item('__str__', self.value, self)
+        make_item("__str__", self.value, self)
 
 
 def make_item(name, value, parent=None):
-    """ Generate VariablesTreeItem instance for the given variable """
+    """Generate VariablesTreeItem instance for the given variable"""
     # print "MAKING", name, value
     if isinstance(value, dict):
         return DictTreeItem(name, value, parent)
@@ -176,15 +171,23 @@ class VariablesDelegate(QStyledItemDelegate):
         painter.setClipRect(opt.rect)
 
         # background
-        style.drawPrimitive(QStyle.PrimitiveElement.PE_PanelItemViewItem, opt, painter, None)
+        style.drawPrimitive(
+            QStyle.PrimitiveElement.PE_PanelItemViewItem, opt, painter, None
+        )
 
-        text_margin = style.pixelMetric(QStyle.PixelMetric.PM_FocusFrameHMargin, None, None) + 1
-        text_rect = opt.rect.adjusted(text_margin, 0, -text_margin, 0)  # remove width padding
+        text_margin = (
+            style.pixelMetric(QStyle.PixelMetric.PM_FocusFrameHMargin, None, None) + 1
+        )
+        text_rect = opt.rect.adjusted(
+            text_margin, 0, -text_margin, 0
+        )  # remove width padding
 
         # variable name
         painter.save()
         painter.setPen(QPen(Qt.GlobalColor.red))
-        used_rect = painter.drawText(text_rect, Qt.AlignmentFlag.AlignLeft, index.data(Role_Name))
+        used_rect = painter.drawText(
+            text_rect, Qt.AlignmentFlag.AlignLeft, index.data(Role_Name)
+        )
         painter.restore()
 
         # equals sign
@@ -195,7 +198,9 @@ class VariablesDelegate(QStyledItemDelegate):
         text_rect = text_rect.adjusted(used_rect.width(), 0, 0, 0)
         painter.save()
         painter.setPen(QPen(Qt.GlobalColor.gray))
-        used_rect = painter.drawText(text_rect, Qt.AlignmentFlag.AlignLeft, "{%s} " % index.data(Role_Type))
+        used_rect = painter.drawText(
+            text_rect, Qt.AlignmentFlag.AlignLeft, "{%s} " % index.data(Role_Type)
+        )
         painter.restore()
 
         # variable
@@ -217,7 +222,9 @@ class VariablesItemModel(QAbstractItemModel):
         if parent.column() > 0:
             return 0
 
-        parent_item = self.root_item if not parent.isValid() else parent.internalPointer()
+        parent_item = (
+            self.root_item if not parent.isValid() else parent.internalPointer()
+        )
         if not parent_item.populated_children:  # lazy loading
             parent_item.populate_children()
         return len(parent_item.children)
@@ -254,7 +261,9 @@ class VariablesItemModel(QAbstractItemModel):
         if not self.hasIndex(row, column, parent):
             return QModelIndex()
 
-        parent_item = self.root_item if not parent.isValid() else parent.internalPointer()
+        parent_item = (
+            self.root_item if not parent.isValid() else parent.internalPointer()
+        )
         child_item = parent_item.children[row]
         return self.createIndex(row, column, child_item)
 
@@ -270,7 +279,11 @@ class VariablesItemModel(QAbstractItemModel):
         return self.createIndex(parent_index_in_grandparent, 0, parent_item)
 
     def headerData(self, section, orientation, role):
-        if section == 0 and orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
+        if (
+            section == 0
+            and orientation == Qt.Orientation.Horizontal
+            and role == Qt.ItemDataRole.DisplayRole
+        ):
             return "Variables"
 
 
@@ -286,7 +299,7 @@ class VariablesView(QTreeView):
         self.customContextMenuRequested.connect(self._open_menu)
 
     def setVariables(self, variables):
-        model = VariablesItemModel(DictTreeItem('', variables), self)
+        model = VariablesItemModel(DictTreeItem("", variables), self)
         self.setModel(model)
 
     def on_item_double_click(self, index):
@@ -294,12 +307,13 @@ class VariablesView(QTreeView):
         parent = index.data(Role_Parent)
         if parent.name:
             name = self.format_item_name_for_container_access(name, parent)
-            self.object_picked.emit("{}{}".format(self.get_variable_parent_name(parent)[1:], name))
+            self.object_picked.emit(
+                "{}{}".format(self.get_variable_parent_name(parent)[1:], name)
+            )
         else:
             self.object_picked.emit(name)
 
     def _open_menu(self, position):
-
         menu = QMenu()
         var_val_action = QAction("Copy Variable Value", menu)
         var_name_action = QAction("Copy Variable Name", menu)
@@ -334,7 +348,7 @@ class VariablesView(QTreeView):
         val = indexes[0].data(Role_Name)
         parent = indexes[0].data(Role_Parent)
         if parent:
-            val = ("{}.{}".format(self.get_variable_parent_name(parent)[1:], val))
+            val = "{}.{}".format(self.get_variable_parent_name(parent)[1:], val)
         cb = QApplication.clipboard()
         cb.clear(mode=cb.Clipboard)
         cb.setText(val, mode=cb.Clipboard)
@@ -342,7 +356,9 @@ class VariablesView(QTreeView):
     def get_variable_parent_name(self, parent):
         if parent.parent is not None:
             parent_name = self.get_variable_parent_name(parent.parent)
-            this_name = self.format_item_name_for_container_access(parent.name, parent.parent)
+            this_name = self.format_item_name_for_container_access(
+                parent.name, parent.parent
+            )
             return "{}{}".format(parent_name, this_name)
 
         else:
@@ -359,17 +375,16 @@ class VariablesView(QTreeView):
         return name
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+
     class TestClass:
         A1 = 123
 
         def __init__(self):
             self.x = 456
 
-
     def handle_TestClass(value, parent):
         make_item("handler test", 1234567890, parent)
-
 
     def long_string():
         return r"""
@@ -382,7 +397,6 @@ if __name__ == '__main__':
             ORDER BY
                 name"""
 
-
     custom_class_handlers[TestClass] = handle_TestClass
 
     import sys
@@ -390,7 +404,16 @@ if __name__ == '__main__':
     a = QApplication(sys.argv)
 
     tv = VariablesView()
-    tv.setVariables({'a': 1, 'ax': [5, 6, 7], 'b': {'c': 3, 'd': 4}, 'tv': tv, 'e': TestClass(), 'ls': long_string()})
+    tv.setVariables(
+        {
+            "a": 1,
+            "ax": [5, 6, 7],
+            "b": {"c": 3, "d": 4},
+            "tv": tv,
+            "e": TestClass(),
+            "ls": long_string(),
+        }
+    )
     tv.show()
 
     a.exec()
