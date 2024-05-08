@@ -12,17 +12,12 @@
 import sys
 
 from qgis.gui import QgsCodeEditorPython
-from qgis.PyQt.Qsci import (
-    QsciCommand,
-    QsciScintilla
-)
-from qgis.PyQt.QtGui import (
-    QColor
-)
+from qgis.PyQt.Qsci import QsciCommand, QsciScintilla
+from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtWidgets import QApplication
 
 
-fontName = 'Courier'
+fontName = "Courier"
 fontSize = 10
 caretBackground = QColor("#e4e4ff")
 
@@ -31,7 +26,6 @@ caretBackground = QColor("#e4e4ff")
 
 
 class SourceView(QgsCodeEditorPython):
-
     def __init__(self, parent=None):
         QgsCodeEditorPython.__init__(self, parent)
 
@@ -43,14 +37,14 @@ class SourceView(QgsCodeEditorPython):
             self.setText(file.read())
 
     def jumpToLine(self, line_number):
-        self.setCursorPosition(line_number-1, 0)
+        self.setCursorPosition(line_number - 1, 0)
         # prevent issues with initially invisible cursor / caret line
         self.setFocus()
         self.standardCommands().find(QsciCommand.Command.VerticalCentreCaret).execute()
 
     # def resizeEvent(self, event):
-        # QsciScintilla.resizeEvent(self, event)
-        # print "RESIZE"
+    # QsciScintilla.resizeEvent(self, event)
+    # print "RESIZE"
 
     def showEvent(self, event):
         QsciScintilla.showEvent(self, event)
