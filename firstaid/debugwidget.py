@@ -382,11 +382,13 @@ class DebugWidget(QWidget):
             self.go_to_frame(row)
 
     def go_to_frame(self, index):
+        self.source.clearWarnings()
         filename = self.entries[index][0]
         lineno = self.entries[index][1]
 
         self.source.openFile(filename)
         self.source.jumpToLine(lineno)
+        self.source.addWarning(lineno-1, self.etype.__name__)
 
         local_vars = frame_from_traceback(self.tb, index).f_locals
         self.variables.setVariables(local_vars)
