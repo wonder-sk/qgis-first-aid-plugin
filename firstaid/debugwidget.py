@@ -388,7 +388,7 @@ class DebugWidget(QWidget):
 
         self.source.openFile(filename)
         self.source.jumpToLine(lineno)
-        self.source.addWarning(lineno-1, self.etype.__name__)
+        self.source.addWarning(lineno - 1, self.etype.__name__)
 
         local_vars = frame_from_traceback(self.tb, index).f_locals
         self.variables.setVariables(local_vars)

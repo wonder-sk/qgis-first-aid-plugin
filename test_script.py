@@ -4,14 +4,14 @@
 def fact(n):
     res = n
     if n > 1:
-        res *= fact(n-1)
+        res *= fact(n - 1)
     return res
 
 
 def quicksort(lst):
     if len(lst) < 2:
         return lst
-    pivot_index = len(lst)/2
+    pivot_index = len(lst) / 2
     pivot = lst[pivot_index]
     lower = [x for x in lst if x < pivot]
     higher = [x for x in lst if x > pivot]
