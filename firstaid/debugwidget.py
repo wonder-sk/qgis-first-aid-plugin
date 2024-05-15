@@ -36,6 +36,11 @@ from qgis.PyQt.QtGui import QGuiApplication, QIcon, QFontMetrics
 from qgis.core import Qgis, QgsApplication
 from qgis.gui import QgsGui, QgsCodeEditorPython
 
+try:
+    from qgis.gui import QgsCodeEditorWidget
+except ImportError:
+    QgsCodeEditorWidget = None
+
 from .variablesview import VariablesView
 from .sourceview import SourceView
 from .framesview import FramesView
@@ -328,7 +333,12 @@ class DebugWidget(QWidget):
 
         self.splitterSrc = QSplitter(Qt.Orientation.Horizontal)
         self.splitterSrc.addWidget(self.frames)
-        self.splitterSrc.addWidget(self.source)
+        if QgsCodeEditorWidget is not None:
+            self._source_editor_widget = QgsCodeEditorWidget(self.source)
+            self.splitterSrc.addWidget(self._source_editor_widget)
+        else:
+            self._source_editor_widget = None
+            self.splitterSrc.addWidget(self.source)
         self.splitterSrc.setStretchFactor(0, 1)
         self.splitterSrc.setStretchFactor(1, 2)
         self.splitterSrc.setCollapsible(0, False)
