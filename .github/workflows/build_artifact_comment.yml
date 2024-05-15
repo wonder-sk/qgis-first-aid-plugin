@@ -27,10 +27,10 @@ jobs:
                repo: context.repo.repo,
                run_id: context.payload.workflow_run.id,
             });
-            console.log(artifact.name);
             let matchArtifacts = allArtifacts.data.artifacts.filter((artifact) => {
               return artifact.name == firstaid.zip
             });
+            console.log(artifact.name);
             if (matchArtifacts.length>0)
             {
               let download = await github.rest.actions.downloadArtifact({
