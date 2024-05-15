@@ -39,7 +39,7 @@ jobs:
 
     - name: Build package
       run: |
-        qgis-plugin-ci --no-validation package ${{ env.VERSION }}
+        qgis-plugin-ci --no-validation package
         mkdir tmp
         unzip firstaid.zip -d tmp
 
