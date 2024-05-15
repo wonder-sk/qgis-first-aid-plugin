@@ -30,7 +30,6 @@ jobs:
             let matchArtifacts = allArtifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "firstaid.zip"
             });
-            console.log(artifact.name);
             if (matchArtifacts.length>0)
             {
               let download = await github.rest.actions.downloadArtifact({
