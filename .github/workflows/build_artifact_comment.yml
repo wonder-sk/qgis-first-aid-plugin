@@ -39,7 +39,7 @@ jobs:
                  archive_format: 'zip',
               });
               let fs = require('fs');
-              fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/ffirstaid${process.env.VERSION}.zip`, Buffer.from(download.data));
+              fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/firstaid${process.env.VERSION}.zip`, Buffer.from(download.data));
               core.setOutput('artifact_id', matchArtifacts[0].id);
             }
             else
