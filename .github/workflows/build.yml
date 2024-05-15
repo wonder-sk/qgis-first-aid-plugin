@@ -41,7 +41,7 @@ jobs:
       run: |
         qgis-plugin-ci --no-validation package ${{ env.VERSION }}
         mkdir tmp
-        unzip firstaid.${{ env.VERSION }}.zip -d tmp
+        unzip firstaid.zip -d tmp
 
     - name: Save PR number to zips
       run: |
