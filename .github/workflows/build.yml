@@ -15,7 +15,6 @@ jobs:
       with:
         # To fetch tags
         fetch-depth: 0
-    - run: git fetch --prune --unshallow
 
     - name: Set up Python
       uses: actions/setup-python@v5
