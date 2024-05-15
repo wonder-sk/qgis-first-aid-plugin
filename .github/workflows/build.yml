@@ -54,3 +54,4 @@ jobs:
       with:
         name: firstaid_plugin.${{ env.VERSION }}.${{ env.SHA_SHORT }}
         path: tmp
+
