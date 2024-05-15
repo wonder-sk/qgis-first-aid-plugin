@@ -2,7 +2,7 @@ name: Write build artifact comments
 
 on:
   workflow_run:
-    workflows: [Build]
+    workflows: ["Build"]
     types:
       - completed
 
