@@ -403,8 +403,7 @@ class DebugWidget(QWidget):
         self.source.openFile(filename)
         self.source.jumpToLine(lineno)
         if self._source_editor_widget:
-            self._source_editor_widget.addWarning(
-                lineno - 1, self.etype.__name__)
+            self._source_editor_widget.addWarning(lineno - 1, self.etype.__name__)
         else:
             self.source.addWarning(lineno - 1, self.etype.__name__)
 
