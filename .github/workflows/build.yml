@@ -39,18 +39,18 @@ jobs:
 
     - name: Build package
       run: |
-        qgis-plugin-ci --no-validation package
+        qgis-plugin-ci --no-validation package ${{ env.VERSION }}
         mkdir tmp
-        unzip firstaid.zip -d tmp
+        unzip firstaid.${{ env.VERSION }}.zip -d tmp
 
     - name: Save PR number to zips
       run: |
         echo ${{ github.event.number }} | tee pr_number
-        zip -u firstaid.zip pr_number
+        zip -u firstaid.${{ env.VERSION }}.zip pr_number
         echo ${{ github.event.pull_request.head.sha }} | tee git_commit
-        zip -u firstaid.zip git_commit
+        zip -u firstaid.${{ env.VERSION }}.zip git_commit
 
     - uses: actions/upload-artifact@v2
       with:
-        name: firstaid.zip
+        name: firstaid.${{ env.VERSION }}.zip
         path: tmp
