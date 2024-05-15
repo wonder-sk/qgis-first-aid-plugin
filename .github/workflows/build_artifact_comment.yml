@@ -11,8 +11,10 @@ permissions:
 
 jobs:
   on-success:
+
     permissions:
       pull-requests: write
+
     runs-on: ubuntu-latest
     steps:
       - name: 'Download artifact'
@@ -20,36 +22,48 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const { data: allArtifacts } = await github.actions.listWorkflowRunArtifacts({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.payload.workflow_run.id
+            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: context.payload.workflow_run.id,
             });
-            const matchArtifacts = allArtifacts.artifacts.filter(artifact => artifact.name === "QGIS for Windows 64bit");
-            if (matchArtifacts.length > 0) {
-              const download = await github.actions.downloadArtifact({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                artifact_id: matchArtifacts[0].id,
-                archive_format: 'zip'
+            let matchArtifacts = allArtifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "QGIS for Windows 64bit"
+            });
+            if (matchArtifacts.length>0)
+            {
+              let download = await github.rest.actions.downloadArtifact({
+                 owner: context.repo.owner,
+                 repo: context.repo.repo,
+                 artifact_id: matchArtifacts[0].id,
+                 archive_format: 'zip',
               });
-              const fs = require('fs');
+              let fs = require('fs');
               fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/QGIS for Windows 64bit.zip`, Buffer.from(download.data));
               core.setOutput('artifact_id', matchArtifacts[0].id);
-            } else {
+            }
+            else
+            {
               core.setOutput('artifact_id', 0);
             }
-            const matchArtifactsDebugSymbols = allArtifacts.artifacts.filter(artifact => artifact.name === "QGIS for Windows 64bit Debug Symbols");
-            if (matchArtifactsDebugSymbols.length > 0) {
+            let matchArtifactsDebugSymbols = allArtifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "QGIS for Windows 64bit Debug Symbols"
+            });
+            if (matchArtifactsDebugSymbols.length>0)
+            {
               core.setOutput('debug_symbols_artifact_id', matchArtifactsDebugSymbols[0].id);
-            } else {
+            }
+            else
+            {
               core.setOutput('debug_symbols_artifact_id', 0);
             }
 
       - name: 'Unzip artifact'
         if: fromJSON(steps.download_artifact.outputs.artifact_id) > 0
+          # unzip "QGIS for Windows 64bit.zip"
+          # unzip -j qgis-portable-win64.zip pr_number git_commit
         run: |
-          unzip "QGIS for Windows 64bit.zip"
+          unzip firstaid.${{ env.VERSION }}.zip
 
       - name: 'Post artifact download link as comment on PR'
         if: fromJSON(steps.download_artifact.outputs.artifact_id) > 0
@@ -57,29 +71,31 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const fs = require('fs');
-            const issue_number = Number(fs.readFileSync('./pr_number'));
-            const git_sha = String(fs.readFileSync('./git_commit')).trim();
-            const prComments = await github.issues.listComments({
+            let fs = require('fs');
+            let issue_number = Number(fs.readFileSync('./pr_number'));
+            let git_sha = String(fs.readFileSync('./git_commit')).trim();
+            const prComments = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: issue_number
+              issue_number: issue_number,
             });
             const PREFIX = "## Plugin ready!";
-            let body = PREFIX + "\\n\\n" +
-              "A test version of this PR are available for testing [here](https://github.com/" + context.repo.owner + "/" + context.repo.repo + "/suites/" +  context.payload.workflow_run.check_suite_id + "/artifacts/${{steps.download_artifact.outputs.artifact_id}}).";
-            body += "\\n\\n*(Built from commit " + git_sha + ")*";
+            let body = PREFIX + "\n\n" +
+                "A test version of this PR are available for testing [here](https://github.com/" + context.repo.owner + "/" + context.repo.repo + "/suites/" +  context.payload.workflow_run.check_suite_id + "/artifacts/${{steps.download_artifact.outputs.artifact_id}}).";
+            body += "\n\n*(Built from commit " + git_sha + ")*";
 
             const winBuildComment = prComments.data?.find(c => c.body.startsWith(PREFIX));
-            if (winBuildComment) {
-              await github.issues.updateComment({
+            if (!!winBuildComment) {
+              // update the existing comment
+              await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 comment_id: winBuildComment.id,
                 body: body
               });
             } else {
-              await github.issues.createComment({
+              // submit a new comment
+              await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue_number,
