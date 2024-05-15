@@ -27,8 +27,9 @@ jobs:
                repo: context.repo.repo,
                run_id: context.payload.workflow_run.id,
             });
+            console.log(artifacrt.name);
             let matchArtifacts = allArtifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == "QGIS for Windows 64bit"
+              return artifact.name == firstaid.zip
             });
             if (matchArtifacts.length>0)
             {
@@ -39,29 +40,16 @@ jobs:
                  archive_format: 'zip',
               });
               let fs = require('fs');
-              fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/QGIS for Windows 64bit.zip`, Buffer.from(download.data));
+              fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/firstaid.zip`, Buffer.from(download.data));
               core.setOutput('artifact_id', matchArtifacts[0].id);
             }
             else
             {
               core.setOutput('artifact_id', 0);
             }
-            let matchArtifactsDebugSymbols = allArtifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == "QGIS for Windows 64bit Debug Symbols"
-            });
-            if (matchArtifactsDebugSymbols.length>0)
-            {
-              core.setOutput('debug_symbols_artifact_id', matchArtifactsDebugSymbols[0].id);
-            }
-            else
-            {
-              core.setOutput('debug_symbols_artifact_id', 0);
-            }
 
       - name: 'Unzip artifact'
         if: fromJSON(steps.download_artifact.outputs.artifact_id) > 0
-          # unzip "QGIS for Windows 64bit.zip"
-          # unzip -j qgis-portable-win64.zip pr_number git_commit
         run: |
           unzip firstaid.${{ env.VERSION }}.zip
 
