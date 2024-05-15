@@ -52,5 +52,5 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-        name: firstaid.${{ env.VERSION }}.zip
+        name: firstaid_plugin.${{ env.VERSION }}.${{ env.SHA_SHORT }}
         path: tmp
