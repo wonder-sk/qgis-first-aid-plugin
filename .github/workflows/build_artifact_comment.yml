@@ -28,7 +28,7 @@ jobs:
                run_id: context.payload.workflow_run.id,
             });
             let matchArtifacts = allArtifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == "firstaid_plugin.${{ env.VERSION }}.${{ env.SHA_SHORT }}"
+              return artifact.name == "firstaid.${{ env.VERSION }}.${{ env.SHA_SHORT }}"
             });
             if (matchArtifacts.length>0)
             {
@@ -39,7 +39,7 @@ jobs:
                  archive_format: 'zip',
               });
               let fs = require('fs');
-              fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/first_aid.zip`, Buffer.from(download.data));
+              fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/firstaid.${{ env.VERSION }}.${{ env.SHA_SHORT }}`, Buffer.from(download.data));
               core.setOutput('artifact_id', matchArtifacts[0].id);
             }
             else
