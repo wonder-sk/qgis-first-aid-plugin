@@ -43,6 +43,7 @@ jobs:
         cd tmp
         echo ${{ github.event.number }} | tee pr_number
         echo ${{ github.event.pull_request.head.sha }} | tee git_commit
+        echo ${{ github.event.number }}
 
     - uses: actions/upload-artifact@v2
       with:
