@@ -38,10 +38,10 @@ jobs:
                repo: context.repo.repo,
                run_id: context.payload.workflow_run.id,
             });
-            echo allArtifacts.data.artifacts
             let matchArtifacts = allArtifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "firstaid"
             });
+            echo allArtifacts.data.artifacts
             matchArtifacts.forEach((artifact) => {
             });
             if (matchArtifacts.length>0)
