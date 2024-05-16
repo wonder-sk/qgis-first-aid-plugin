@@ -41,7 +41,6 @@ jobs:
             let matchArtifacts = allArtifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "firstaid"
             });
-            echo allArtifacts.data.artifacts
             matchArtifacts.forEach((artifact) => {
             });
             if (matchArtifacts.length>0)
