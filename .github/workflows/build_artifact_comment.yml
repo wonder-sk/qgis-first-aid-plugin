@@ -31,7 +31,6 @@ jobs:
               return artifact.name == "firstaid_plugin.${{ env.VERSION }}.${{ env.SHA_SHORT }}"
             });
             matchArtifacts.forEach((artifact) => {
-            console.log(artifact.name);
             });
             if (matchArtifacts.length>0)
             {
