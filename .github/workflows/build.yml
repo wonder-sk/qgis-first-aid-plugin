@@ -45,6 +45,7 @@ jobs:
 
     - name: Save PR number to zips
       run: |
+        cd tmp
         echo ${{ github.event.number }} | tee pr_number
         zip -u firstaid.${{ env.VERSION }}.zip pr_number
         echo ${{ github.event.pull_request.head.sha }} | tee git_commit
