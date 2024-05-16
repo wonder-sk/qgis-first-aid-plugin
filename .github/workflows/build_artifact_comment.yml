@@ -17,6 +17,12 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
+      - name: Get source code
+        uses: actions/checkout@v4
+        with:
+          # To fetch tags
+          fetch-depth: 0
+
       - name: 'Set plugin version environment variables'
         run: |
           TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
