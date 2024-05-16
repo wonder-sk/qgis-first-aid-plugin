@@ -23,11 +23,6 @@ jobs:
         cache: "pip"
         cache-dependency-path: "requirements/packaging.txt"
 
-    # - name: Install Qt lrelease
-    #   run: |
-    #     sudo apt-get update
-    #     sudo apt-get install qttools5-dev-tools
-
     - name: Install Python requirements
       run: pip install -r requirements/packaging.txt
 
