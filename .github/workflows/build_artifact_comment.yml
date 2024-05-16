@@ -17,6 +17,11 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
+      - name: 'Set plugin version environment variables'
+        run: |
+          TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
+          echo "VERSION=$(echo ${TAG} | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}')-alpha" >> $GITHUB_ENV
+          echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - name: 'Download artifact'
         id: download_artifact
         uses: actions/github-script@v7
