@@ -47,8 +47,8 @@ jobs:
       run: |
         echo ${{ github.event.number }} | tee pr_number -d tmp
         zip -u firstaid.${{ env.VERSION }}.zip pr_number -d tmp
-        echo ${{ github.event.pull_request.head.sha }} | tee git_commit -d tmp
-        zip -u firstaid.${{ env.VERSION }}.zip git_commit -d tmp
+        echo ${{ github.event.pull_request.head.sha }} | tee tmp/git_commit
+        zip -u firstaid.${{ env.VERSION }}.zip tmp/git_commit
 
     - uses: actions/upload-artifact@v2
       with:
