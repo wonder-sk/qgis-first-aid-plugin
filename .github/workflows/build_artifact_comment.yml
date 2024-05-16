@@ -27,8 +27,9 @@ jobs:
                repo: context.repo.repo,
                run_id: context.payload.workflow_run.id,
             });
+            console.log(allArtifacts)
             let matchArtifacts = allArtifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == "firstaid"
+              return artifact.name == "firstaid.${{ env.VERSION }}.${{ env.SHA_SHORT }}"
             });
             matchArtifacts.forEach((artifact) => {
             });

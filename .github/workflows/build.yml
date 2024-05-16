@@ -50,8 +50,7 @@ jobs:
         echo ${{ github.event.pull_request.head.sha }} | tee git_commit
         zip -u firstaid.${{ env.VERSION }}.zip git_commit
 
-    - name: Upload zip
-      uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v2
       with:
-        name: firstaid
-        path: firstaid.${{ env.VERSION }}.${{ env.SHA_SHORT }}
+        name: firstaid.${{ env.VERSION }}.${{ env.SHA_SHORT }}
+        path: tmp
