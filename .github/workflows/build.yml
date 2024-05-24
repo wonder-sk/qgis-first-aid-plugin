@@ -23,11 +23,6 @@ jobs:
         cache: "pip"
         cache-dependency-path: "requirements/packaging.txt"
 
-    # - name: Install Qt lrelease
-    #   run: |
-    #     sudo apt-get update
-    #     sudo apt-get install qttools5-dev-tools
-
     - name: Install Python requirements
       run: pip install -r requirements/packaging.txt
 
@@ -43,7 +38,14 @@ jobs:
         mkdir tmp
         unzip firstaid.${{ env.VERSION }}.zip -d tmp
 
+    - name: Save PR number to zips
+      run: |
+        cd tmp
+        echo ${{ github.event.number }} | tee pr_number
+        echo ${{ github.event.pull_request.head.sha }} | tee git_commit
+        echo ${{ github.event.number }}
+
     - uses: actions/upload-artifact@v2
       with:
-        name: firstaid_plugin.${{ env.VERSION }}.${{ env.SHA_SHORT }}
+        name: firstaid
         path: tmp
