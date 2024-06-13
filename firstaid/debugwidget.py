@@ -442,6 +442,9 @@ class DebugDialog(QDialog):
         self.clear_history_button.clicked.connect(self.clear_console_history)
 
         self.open_external_editor_button = QPushButton(self.tr("Open Text Editor"))
+        self.open_external_editor_button.setIcon(
+            QgsApplication.getThemeIcon("console/iconShowEditorConsole.svg")
+        )
         self.open_external_editor_button.clicked.connect(self.open_in_external_editor)
 
         self.save_output_button = QPushButton(self.tr("Copy Details"))
