@@ -457,8 +457,7 @@ class DebugDialog(QDialog):
         self.horz_layout.addWidget(self.clear_history_button)
         self.horz_layout.addWidget(self.save_output_button)
         if self._source_editor_widget:
- 
-   self.horz_layout.addWidget(self.open_external_editor_button)
+            self.horz_layout.addWidget(self.open_external_editor_button)
         self.horz_layout.addWidget(self.button_box)
 
         layout.addLayout(self.horz_layout)
