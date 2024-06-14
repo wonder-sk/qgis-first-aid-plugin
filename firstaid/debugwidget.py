@@ -391,7 +391,8 @@ class DebugWidget(QWidget):
         if 0 <= row < len(self.entries):
             self.go_to_frame(row)
         path = self.entries[row][0]
-        self._source_editor_widget.setFilePath(path)
+        if self._source_editor_widget:
+            self._source_editor_widget.setFilePath(path)
 
     def go_to_frame(self, index):
         if self._source_editor_widget:
