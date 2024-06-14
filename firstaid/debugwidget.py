@@ -390,6 +390,9 @@ class DebugWidget(QWidget):
         row = current.row()
         if 0 <= row < len(self.entries):
             self.go_to_frame(row)
+        path = self.entries[row][0]
+        if self._source_editor_widget:
+            self._source_editor_widget.setFilePath(path)
 
     def go_to_frame(self, index):
         if self._source_editor_widget:
@@ -439,6 +442,12 @@ class DebugDialog(QDialog):
         )
         self.clear_history_button.clicked.connect(self.clear_console_history)
 
+        self.open_external_editor_button = QPushButton(self.tr("Open Text Editor"))
+        self.open_external_editor_button.setIcon(
+            QgsApplication.getThemeIcon("console/iconShowEditorConsole.svg")
+        )
+        self.open_external_editor_button.clicked.connect(self.open_in_external_editor)
+
         self.save_output_button = QPushButton(self.tr("Copy Details"))
         self.save_output_button.setIcon(
             QIcon(":images/themes/default/mActionEditCopy.svg")
@@ -447,6 +456,8 @@ class DebugDialog(QDialog):
 
         self.horz_layout.addWidget(self.clear_history_button)
         self.horz_layout.addWidget(self.save_output_button)
+        if self._source_editor_widget:
+            self.horz_layout.addWidget(self.open_external_editor_button)
         self.horz_layout.addWidget(self.button_box)
 
         layout.addLayout(self.horz_layout)
@@ -457,6 +468,9 @@ class DebugDialog(QDialog):
 
     def clear_console_history(self):
         self.debug_widget.console.console.history = []
+
+    def open_in_external_editor(self):
+        self.debug_widget._source_editor_widget.openInExternalEditor()
 
     def save_output(self):
         report = {
