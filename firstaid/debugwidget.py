@@ -442,7 +442,7 @@ class DebugDialog(QDialog):
         )
         self.clear_history_button.clicked.connect(self.clear_console_history)
 
-        self.open_external_editor_button = QPushButton(self.tr("Open Text Editor"))
+        self.open_external_editor_button = QPushButton(self.tr("Open in Editor…"))
         self.open_external_editor_button.setIcon(
             QgsApplication.getThemeIcon("console/iconShowEditorConsole.svg")
         )
@@ -456,7 +456,7 @@ class DebugDialog(QDialog):
 
         self.horz_layout.addWidget(self.clear_history_button)
         self.horz_layout.addWidget(self.save_output_button)
-        if self._source_editor_widget:
+        if self.debug_widget._source_editor_widget:
             self.horz_layout.addWidget(self.open_external_editor_button)
         self.horz_layout.addWidget(self.button_box)
 
