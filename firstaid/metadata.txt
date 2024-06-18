@@ -14,7 +14,7 @@ tracker=https://github.com/wonder-sk/qgis-first-aid-plugin/issues
 repository=https://github.com/wonder-sk/qgis-first-aid-plugin
 about=Provides Python debugger and replaces the default Python error handling in QGIS
   with a more sophisticated handler that allows more thorough inspection
-  or the Python error: browse the frames, view variables, see source code
+  of the Python error: browse the frames, view variables, see source code
   or even execute Python code within the context of the error.
 tags=debug
 
