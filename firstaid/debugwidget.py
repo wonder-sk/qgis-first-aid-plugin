@@ -155,7 +155,7 @@ class ConsoleInput(QgsCodeEditorPython, code.InteractiveInterpreter):
                 self.history_index += 1
                 self.setText(self.history[self.history_index])
             self.displayPrompt()
-        elif event.key() == Qt.Key.Key_Return:
+        elif event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             self.history_index = 0
 
             cmd = self.text()
