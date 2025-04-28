@@ -1,7 +1,7 @@
 [general]
 name=First Aid
 description=The must-have tool for Python plugin developers
-version=3.2.0
+version=3.2.1
 qgisMinimumVersion=3.0
 qgisMaximumVersion=3.99
 supportsQt6=yes
@@ -18,7 +18,8 @@ about=Provides Python debugger and replaces the default Python error handling in
   or even execute Python code within the context of the error.
 tags=debug
 
-changelog=<p>3.2.0 Use improved code browser widgets on QGIS 3.38+
+changelog=<p>3.2.1 Fix enter key handling
+  <p>3.2.0 Use improved code browser widgets on QGIS 3.38+
   <p>3.1.1 Fix highlight of current line when exception dialog options
   <p>3.1.0 Support qt6 builds of QGIS
   <p>3.0.3 Fix copy report, fix some warnings
