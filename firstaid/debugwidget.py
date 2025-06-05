@@ -322,6 +322,10 @@ class DebugWidget(QWidget):
 
         msg = str(value).replace("\n", "<br>").replace(" ", "&nbsp;")
         self.error = QLabel("<h1>" + etype.__name__ + "</h1><b>" + msg + "</b>")
+        # limit label width as it doesn't respect QWidget.maximumWidth
+        screen = QApplication.primaryScreen()
+        if screen:
+            self.error.setMaximumWidth(screen.availableGeometry().width() - 20)
         self.error.setWordWrap(True)
         self.error.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
 
