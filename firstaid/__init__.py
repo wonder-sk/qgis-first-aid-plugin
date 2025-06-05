@@ -33,6 +33,11 @@ def show_debug_widget(debug_widget_data):
             return  # pass this exception while previous is being inspected
 
     dw = DebugDialog(debug_widget_data)
+
+    screen = QApplication.primaryScreen()
+    if screen:
+        screen_geometry = screen.availableGeometry()
+        dw.setMaximumSize(screen_geometry.width(), screen_geometry.height())
     dw.show()
     dw.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
